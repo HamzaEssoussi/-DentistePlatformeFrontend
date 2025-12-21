@@ -1,0 +1,873 @@
+/* Rendezvous.css - Styles complets pour le formulaire de rendez-vous */
+
+/* ===== VARIABLES ET RESET ===== */
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --accent-color: #1abc9c;
+  --danger-color: #e74c3c;
+  --success-color: #2ecc71;
+  --warning-color: #f39c12;
+  --light-color: #ecf0f1;
+  --dark-color: #34495e;
+  --gray-color: #7f8c8d;
+  --border-radius: 12px;
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.rendezvous-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+  padding: 2rem 0;
+}
+
+/* ===== EN-TÊTE DE PAGE ===== */
+.page-header {
+  padding: 3rem 0;
+  background: white;
+  border-radius: var(--border-radius);
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+}
+
+.page-header h1 {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  display: inline-block;
+}
+
+.page-header .lead {
+  color: var(--gray-color);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ===== FORMULAIRE PRINCIPAL ===== */
+.rendezvous-form {
+  background: white;
+  border: none;
+  position: relative;
+  transition: var(--transition);
+}
+
+.rendezvous-form:hover {
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+}
+
+.rendezvous-form::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, var(--secondary-color), var(--light-color), var(--light-color));
+  z-index: -1;
+  border-radius: calc(var(--border-radius) + 4px);
+  opacity: 0.5;
+}
+
+/* ===== RECHERCHE DE DENTISTE ===== */
+.search-dentiste-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.search-dentiste-input {
+  padding: 1rem 1rem 1rem 3rem;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--border-radius) !important;
+  transition: var(--transition);
+  background: var(--light-color);
+  height: 56px;
+}
+
+.search-dentiste-input:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background: white;
+  outline: none;
+}
+
+.search-dentiste-wrapper .input-group-text {
+  background: transparent;
+  border: none;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  z-index: 10;
+  color: var(--gray-color);
+  padding-left: 1.25rem;
+}
+
+/* ===== DROPDOWN DE RECHERCHE ===== */
+.dentiste-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 400px;
+  overflow-y: auto;
+  background: white;
+  border: 2px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  animation: slideDown 0.3s ease-out;
+  transform-origin: top center;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.dropdown-header {
+  padding: 1rem 1.5rem;
+  background: linear-gradient(90deg, var(--light-color), #f8f9fa);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+  color: var(--dark-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dropdown-list {
+  padding: 0.5rem 0;
+}
+
+.dropdown-item {
+  padding: 1rem 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background: linear-gradient(90deg, rgba(52, 152, 219, 0.05), rgba(26, 188, 156, 0.05));
+  padding-left: 2rem;
+}
+
+.dropdown-item.selected {
+  background: linear-gradient(90deg, rgba(52, 152, 219, 0.1), rgba(26, 188, 156, 0.1));
+  border-left: 4px solid var(--accent-color);
+}
+
+.dropdown-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--gray-color);
+}
+
+.dropdown-empty i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* ===== CARTE DENTISTE DANS DROPDOWN ===== */
+.dentiste-dropdown-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+
+.dentiste-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.dentiste-name {
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.25rem;
+  font-size: 1.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dentiste-speciality {
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.dentiste-contact {
+  font-size: 0.85rem;
+  color: var(--gray-color);
+  display: flex;
+  align-items: center;
+}
+
+.dentiste-speciality i,
+.dentiste-contact i {
+  margin-right: 0.5rem;
+  font-size: 0.9em;
+}
+
+.selected-indicator {
+  color: var(--success-color);
+  font-size: 1.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+/* ===== DENTISTE SÉLECTIONNÉ ===== */
+.selected-dentiste-display {
+  animation: fadeInUp 0.5s ease-out;
+  margin-top: 1.5rem;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.selected-dentiste-display .card {
+  border: none;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.selected-dentiste-display .card-header {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border: none;
+  padding: 1.25rem 1.5rem;
+  font-size: 1.1rem;
+}
+
+.selected-dentiste-display .card-body {
+  padding: 1.4rem;
+}
+
+
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.selected-dentiste-display .card-title {
+  color: var(--primary-color);
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+.selected-dentiste-display .card-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 155px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
+}
+
+.selected-dentiste-display .row p {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.selected-dentiste-display .row p:last-child {
+  border-bottom: none;
+}
+
+.selected-dentiste-display .row p i {
+  width: 24px;
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+}
+
+.selected-dentiste-display a {
+  color: var(--light-color);
+  text-decoration: none;
+  transition: var(--transition);
+  border-bottom: 1px dashed transparent;
+}
+
+.selected-dentiste-display a:hover {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+/* ===== SERVICES MÉDICAUX ===== */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.service-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--secondary-color);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.service-card.selected {
+  border-color: var(--accent-color);
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f8ff 100%);
+}
+
+.service-card.selected::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 60px;
+  height: 60px;
+  background: var(--accent-color);
+  border-radius: 0 0 0 100%;
+  z-index: 1;
+}
+
+.service-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  z-index: 2;
+}
+
+.service-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.service-header .form-check {
+  margin-right: 1rem;
+  margin-bottom: 0;
+}
+
+.service-header .form-check-input {
+  width: 1.3em;
+  height: 1.3em;
+  border: 2px solid var(--gray-color);
+}
+
+.service-header .form-check-input:checked {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.service-title {
+  flex: 1;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.service-price {
+  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px; /* Plus carré que rond */
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+  min-width: 80px;
+  text-align: center;
+  display: inline-block;
+  transition: var(--transition);
+}
+
+.service-body {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+.service-description {
+  color: var(--gray-color);
+  font-size: rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+/* ===== RÉSUMÉ DES SERVICES ===== */
+.selected-services-summary {
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f8ff 100%);
+  border: 2px solid var(--secondary-color);
+  border-radius: var(--border-radius);
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.selected-services-summary h6 {
+  color: var(--primary-color);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.selected-services-summary h6 i {
+  font-size: 1.5rem;
+}
+
+.list-group-item {
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+  padding: 1rem 0;
+  background: transparent;
+}
+
+.list-group-item:last-child {
+  border-bottom: none !important;
+}
+
+.selected-services-summary .badge {
+  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+}
+
+/* ===== CHAMPS DE FORMULAIRE ===== */
+.form-label {
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+}
+
+.form-label i {
+  margin-right: 0.75rem;
+  color: var(--secondary-color);
+  font-size: 1.2rem;
+}
+
+.form-control, .form-select {
+  padding: 0.875rem 1.25rem;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  transition: var(--transition);
+  background: var(--light-color);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+  background: white;
+  outline: none;
+}
+
+.form-text {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.form-text i {
+  margin-right: 0.5rem;
+}
+
+/* ===== BOUTONS RADIO (PREMIÈRE VISITE) ===== */
+.btn-group {
+  border: 2px solid #e0e0e0;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.btn-check:checked + .btn-outline-primary {
+  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+  color: white;
+  border-color: transparent;
+}
+
+.btn-outline-primary {
+  border: none;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.btn-outline-primary:hover {
+  background: rgba(52, 152, 219, 0.1);
+  color: var(--secondary-color);
+}
+
+/* ===== BOUTONS D'ACTION ===== */
+.form-actions {
+  padding-top: 2rem;
+  border-top: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.btn {
+  padding: 1rem 2.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border-radius: var(--border-radius);
+  transition: var(--transition) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+}
+
+.btn-lg {
+  padding: 1.25rem 3rem;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-outline-secondary {
+  border: 2px solid var(--gray-color);
+  color: var(--gray-color);
+}
+
+.btn-outline-secondary:hover {
+  background: var(--gray-color);
+  border-color: var(--gray-color);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.btn-outline-danger {
+  border: 2px solid var(--danger-color);
+  color: var(--danger-color);
+  padding: 0.5rem 1.5rem;
+}
+
+.btn-outline-danger:hover {
+  background: var(--danger-color);
+  color: white;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ===== ALERTES ===== */
+.alert {
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  animation: slideInRight 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.alert::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+}
+
+.alert-success {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+}
+
+.alert-success::before {
+  background: var(--success-color);
+}
+
+.alert-danger {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+}
+
+.alert-danger::before {
+  background: var(--danger-color);
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+}
+
+.alert-warning::before {
+  background: var(--warning-color);
+}
+
+.alert i {
+  font-size: 1.2rem;
+  margin-right: 0.75rem;
+}
+
+.btn-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* ===== SPINNER ===== */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border-width: 0.25em;
+}
+
+/* ===== SCROLLBAR PERSONNALISÉE ===== */
+.dentiste-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dentiste-dropdown::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.dentiste-dropdown::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--secondary-color), var(--accent-color));
+  border-radius: 4px;
+}
+
+.dentiste-dropdown::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--secondary-color), var(--accent-color));
+  opacity: 0.8;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .rendezvous-page {
+    padding: 1rem 0;
+  }
+  
+  .page-header {
+    padding: 2rem 1rem;
+    margin: 1rem;
+  }
+  
+  .rendezvous-form {
+    padding: 1.5rem;
+    margin: 0 1rem;
+  }
+  
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dentiste-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .selected-dentiste-avatar {
+    width: 70px;
+    height: 70px;
+    font-size: 2.5rem;
+  }
+  
+  .btn-lg {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+  
+  .dropdown-item {
+    padding: 0.875rem 1rem;
+  }
+  
+  .dentiste-name {
+    font-size: 1rem;
+  }
+  
+  .dentiste-speciality,
+  .dentiste-contact {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .page-header h1 {
+    font-size: 2rem;
+  }
+  
+  .page-header .lead {
+    font-size: 1rem;
+  }
+  
+  .search-dentiste-input {
+    font-size: 0.95rem;
+    padding: 0.875rem 0.875rem 0.875rem 2.5rem;
+  }
+  
+  .selected-dentiste-display .card-body {
+    padding: 1.5rem;
+  }
+  
+  .selected-dentiste-display .row p {
+    font-size: 0.95rem;
+  }
+}
+
+/* ===== ANIMATIONS GLOBALES ===== */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== UTILITAIRES ===== */
+.text-muted i {
+  margin-right: 0.5rem;
+}
+
+.is-invalid {
+  border-color: var(--danger-color) !important;
+  background: rgba(231, 76, 60, 0.05) !important;
+}
+
+.text-danger {
+  color: var(--danger-color) !important;
+  display: flex;
+  align-items: center;
+}
+
+.text-danger i {
+  margin-right: 0.5rem;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ===== LOADING STATE ===== */
+.container.text-center .spinner-border {
+  border-color: var(--secondary-color);
+  border-right-color: transparent;
+}

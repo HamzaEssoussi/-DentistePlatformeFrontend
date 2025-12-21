@@ -1,0 +1,61 @@
+.patient-page {
+  padding: 2rem 0;
+}
+
+.patient-form {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.patient-form .row {
+  margin-bottom: 1.5rem;
+}
+
+.patient-form .form-label {
+  color: #2c3e50;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.patient-form .form-control,
+.patient-form .form-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.patient-form .form-control:focus,
+.patient-form .form-select:focus {
+  border-color: #1a6bb3;
+  box-shadow: 0 0 0 0.25rem rgba(26, 107, 179, 0.25);
+}
+
+.patient-form .form-check-input {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.5rem;
+}
+
+.patient-form .form-check-input:checked {
+  background-color: #1a6bb3;
+  border-color: #1a6bb3;
+}
+
+.patient-form .btn-lg {
+  padding: 0.75rem 2.5rem;
+  font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .patient-form {
+    padding: 1.5rem;
+  }
+  
+  .patient-form .row {
+    margin-bottom: 1rem;
+  }
+}

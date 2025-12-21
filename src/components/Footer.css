@@ -1,0 +1,57 @@
+.footer {
+  background: #2c3e50;
+  color: white;
+  padding: 2rem 0;
+  margin-top: auto;
+}
+
+.footer-content {
+  text-align: center;
+}
+
+.email-animation {
+  margin-bottom: 1rem;
+  overflow: hidden;
+  position: relative;
+  height: 40px;
+}
+
+.moving-email {
+  position: absolute;
+  white-space: nowrap;
+  color: #4fc3f7;
+  font-weight: bold;
+  font-size: 1.2rem;
+  animation: moveEmail 15s linear infinite;
+}
+
+@keyframes moveEmail {
+  0% {
+    left: -200px;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.copyright {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #bdc3c7;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .moving-email {
+    font-size: 1rem;
+  }
+  
+  @keyframes moveEmail {
+    0% {
+      left: -100px;
+    }
+    100% {
+      left: 100%;
+    }
+  }
+}

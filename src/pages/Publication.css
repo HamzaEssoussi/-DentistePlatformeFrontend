@@ -1,0 +1,14 @@
+.publication-page {
+  padding: 2rem 0;
+}
+
+.publication-form .form-text {
+  color: #6c757d;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.publication-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}

@@ -1,0 +1,126 @@
+.service-page {
+  padding: 2rem 0;
+}
+
+.service-form {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.service-form textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.service-form .form-control[type="file"] {
+  padding: 0.5rem;
+  border: 2px dashed #e0e0e0;
+  background-color: #f8f9fa;
+}
+
+.service-form .form-control[type="file"]:hover {
+  border-color: #1a6bb3;
+  background-color: #e8f4fd;
+}
+
+.service-select {
+  height: 150px;
+}
+
+.service-select option {
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.service-select option:hover {
+  background-color: #e8f4fd;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .service-form {
+    padding: 1.5rem;
+  }
+}/* Rendezvous.css - Ajoutez ces styles */
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.service-card {
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: white;
+}
+
+.service-card:hover {
+  border-color: #0d6efd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.service-card.selected {
+  border-color: #198754;
+  background-color: rgba(25, 135, 84, 0.05);
+}
+
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.service-title {
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+}
+
+.service-price {
+  font-weight: bold;
+  color: #198754;
+  background: #d1e7dd;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.service-description {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.5rem;
+}
+
+.service-meta {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.selected-services-summary {
+  background: #f8f9fa;
+  border-left: 4px solid #0d6efd;
+}
+
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .form-actions .btn {
+    width: 100%;
+  }
+}

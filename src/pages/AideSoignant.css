@@ -1,0 +1,29 @@
+.aidesoignant-page {
+  padding: 2rem 0;
+}
+
+.aidesoignant-form .subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+}
+
+.aidesoignant-form .form-control[type="file"] {
+  border: 2px dashed #ddd;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.aidesoignant-form .form-control[type="file"]:hover {
+  border-color: #1a6bb3;
+  background-color: #f8f9fa;
+}
+
+.input-group-text {
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+}
+
+.fa-camera {
+  color: #6c757d;
+}
