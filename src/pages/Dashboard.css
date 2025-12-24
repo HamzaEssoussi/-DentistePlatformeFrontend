@@ -1,0 +1,922 @@
+/* =========================
+   VARIABLES
+========================= */
+:root {
+  --bg-dark: #0b1c33;
+  --bg-dark-2: #0a1528;
+  --bg-darker: #070f1c;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-light: rgba(255, 255, 255, 0.12);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-light: rgba(255, 255, 255, 0.25);
+  --white: #ffffff;
+  --text-light: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --blue-accent: #6aa9ff;
+  --blue-gradient: linear-gradient(135deg, #6aa9ff, #4d8dff);
+  --purple-gradient: linear-gradient(135deg, #9d6bff, #7b4dff);
+  --green-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+  --orange-gradient: linear-gradient(135deg, #ff9f43, #ff7f00);
+}
+
+/* =========================
+   BASE
+========================= */
+.dashboard-glass {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+  color: var(--text-light);
+  padding-top: 190px;
+}
+
+.container-glass {
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* =========================
+   NAVBAR GLASS
+========================= */
+.navbar-glass {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 5;
+  padding: 130px 0;
+}
+
+.navbar-container {
+  max-width: 1210px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--glass);
+  border-radius: 50px;
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  padding: 1px 24px;
+}
+
+.logo-text {
+  color: var(--white);
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-info-glass {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.user-role {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.logout-btn {
+  background: var(--glass);
+  border: 1px solid var(--border-light);
+  color: var(--text-light);
+  padding: 8px 18px;
+  border-radius: 30px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 99, 71, 0.2);
+  border-color: #ff6347;
+  color: #ff6347;
+}
+
+/* =========================
+   PHOTO STYLES
+========================= */
+.patient-photo-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--border-light);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.patient-photo-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.patient-photo-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
+}
+
+.patient-photo-small img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.patient-initials-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--purple-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  border: 3px solid var(--border-light);
+}
+
+.patient-initials-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--purple-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: bold;
+  border: 2px solid var(--border-light);
+}
+
+/* =========================
+   WELCOME CARD
+========================= */
+.welcome-card {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 25px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.welcome-content {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.welcome-text {
+  flex: 1;
+}
+
+.welcome-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--white), var(--blue-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.welcome-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* =========================
+   BUTTONS GLASS
+========================= */
+.btn-glass-primary {
+  background: var(--blue-gradient);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-glass-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(106, 169, 255, 0.4);
+  color: white;
+}
+
+.btn-glass-outline {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border-light);
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-glass-outline:hover {
+  background: var(--glass-light);
+  border-color: var(--blue-accent);
+  color: var(--blue-accent);
+  transform: translateY(-2px);
+}
+
+.btn-glass-danger {
+  background: rgba(220, 53, 69, 0.2);
+  color: #ff6b6b;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-glass-danger:hover {
+  background: rgba(220, 53, 69, 0.3);
+  border-color: #ff6b6b;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   STATS GRID GLASS
+========================= */
+.stats-grid-glass {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stat-card-glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card-glass:hover {
+  transform: translateY(-5px);
+  border-color: var(--border-light);
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: white;
+}
+
+.total .stat-icon {
+  background: var(--purple-gradient);
+}
+
+.upcoming .stat-icon {
+  background: var(--orange-gradient);
+}
+
+.completed .stat-icon {
+  background: var(--green-gradient);
+}
+
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* =========================
+   DASHBOARD GRID
+========================= */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* =========================
+   SECTION CARDS GLASS
+========================= */
+.section-card-glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.section-header-glass {
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title-glass {
+  font-size: 1.3rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+.section-body {
+  padding: 1.5rem 2rem;
+}
+
+/* =========================
+   APPOINTMENTS
+========================= */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.appointment-item-glass {
+  background: var(--glass-light);
+  border: 1px solid var(--border-glass);
+  border-radius: 15px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.appointment-item-glass:hover {
+  border-color: var(--border-light);
+  transform: translateX(5px);
+}
+
+.appointment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.appointment-type {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.appointment-details {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.detail-item i {
+  color: var(--blue-accent);
+}
+
+.appointment-note {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.appointment-note i {
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  color: var(--blue-accent);
+}
+
+.appointment-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* =========================
+   PUBLICATIONS
+========================= */
+.publications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.publication-item {
+  background: var(--glass-light);
+  border: 1px solid var(--border-glass);
+  border-radius: 15px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.publication-item:hover {
+  border-color: var(--border-light);
+  transform: translateX(5px);
+}
+
+.publication-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.publication-title {
+  font-weight: 600;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.tag {
+  background: var(--blue-gradient);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.publication-content {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.publication-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.publication-author,
+.publication-date {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* =========================
+   INFO GRID GLASS
+========================= */
+.info-grid-glass {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.info-item-glass {
+  background: var(--glass-light);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 1.25rem;
+  border-left: 4px solid var(--blue-accent);
+}
+
+.info-item-glass h6 {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.info-item-glass p {
+  font-weight: 500;
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* =========================
+   ALERTS GLASS
+========================= */
+.alert-glass {
+  background: var(--glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 15px;
+  padding: 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.alert-glass.warning {
+  border-left: 4px solid #ff9f43;
+}
+
+.alert-glass i {
+  color: #ff9f43;
+  font-size: 1.2rem;
+  margin-top: 0.2rem;
+}
+
+.alert-glass h6 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+}
+
+.alert-glass p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* =========================
+   EMPTY STATES
+========================= */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+
+.empty-state i {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h5 {
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+}
+
+.empty-state p {
+  margin-bottom: 1.5rem;
+}
+
+/* =========================
+   BADGES
+========================= */
+.badge-custom {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* =========================
+   LOADING
+========================= */
+.loading-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-dark);
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--glass);
+  border-top-color: var(--blue-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1100px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container-glass {
+    padding: 0 16px;
+  }
+  
+  .welcome-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .welcome-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .navbar-container {
+    padding: 10px 16px;
+  }
+  
+  .navbar-user {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  
+  .section-header-glass {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .appointment-details {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .info-grid-glass {
+    grid-template-columns: 1fr;
+  }
+  
+  .appointment-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .publication-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-glass {
+    grid-template-columns: 1fr;
+  }
+  
+  .welcome-title {
+    font-size: 1.8rem;
+  }
+  
+  .btn-glass-primary,
+  .btn-glass-outline {
+    width: 100%;
+    justify-content: center;
+  }
+  /* Styles spécifiques au dashboard dentiste */
+
+/* Initials dentiste */
+.dentiste-initials-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: bold;
+  margin-right: 25px;
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.dentiste-initials-small {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 12px;
+}
+
+/* Boutons spécifiques */
+.btn-glass-success {
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  transition: all 0.3s ease;
+}
+
+.btn-glass-success:hover {
+  background: rgba(40, 167, 69, 0.2);
+  border-color: rgba(40, 167, 69, 0.3);
+}
+
+.btn-xs {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+}
+
+/* Patients list */
+.patients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.patient-item-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.patient-item-glass:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.patient-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.patient-name {
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.patient-age {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+}
+
+.patient-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.patient-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.patient-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Table pour rendez-vous */
+.upcoming-appointments {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.upcoming-appointments table {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.upcoming-appointments thead {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.upcoming-appointments th {
+  border: none;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.upcoming-appointments td {
+  border: none;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.upcoming-appointments tr:last-child td {
+  border-bottom: none;
+}
+
+.upcoming-appointments tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.25rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dentiste-initials-large {
+    width: 80px;
+    height: 80px;
+    font-size: 24px;
+    margin-right: 15px;
+  }
+  
+  .upcoming-appointments table {
+    font-size: 0.875rem;
+  }
+  
+  .upcoming-appointments th,
+  .upcoming-appointments td {
+    padding: 0.75rem 0.5rem;
+  }
+}
+}

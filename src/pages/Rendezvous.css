@@ -1,124 +1,234 @@
-/* Rendezvous.css - Styles complets pour le formulaire de rendez-vous */
-
-/* ===== VARIABLES ET RESET ===== */
+/* ===== VARIABLES ===== */
 :root {
-  --primary-color: #2c3e50;
-  --secondary-color: #3498db;
-  --accent-color: #1abc9c;
-  --danger-color: #e74c3c;
-  --success-color: #2ecc71;
-  --warning-color: #f39c12;
-  --light-color: #ecf0f1;
-  --dark-color: #34495e;
-  --gray-color: #7f8c8d;
-  --border-radius: 12px;
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --bg-dark: #0b1c33;
+  --bg-dark-2: #20304d;
+  --bg-dark-3: #1a2840;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-light: rgba(255, 255, 255, 0.12);
+  --glass-dark: rgba(0, 0, 0, 0.2);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-glass-light: rgba(255, 255, 255, 0.25);
+  --white: #ffffff;
+  --blue-accent: #6aa9ff;
+  --blue-light: #8bc1ff;
+  --success-color: #4cd964;
+  --danger-color: #ff6b6b;
+  --warning-color: #ffd166;
+  --gray-light: #a0aec0;
+  --gray-dark: #4a5568;
+  --border-radius: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-xl: 32px;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-light: 0 4px 20px rgba(106, 169, 255, 0.2);
 }
 
+/* ===== STYLES GÉNÉRAUX ===== */
 .rendezvous-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-  padding: 2rem 0;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-dark-2) 100%);
+  padding: 120px 20px 60px;
+  color: var(--white);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
-/* ===== EN-TÊTE DE PAGE ===== */
-.page-header {
-  padding: 3rem 0;
-  background: white;
-  border-radius: var(--border-radius);
-  margin-bottom: 2rem;
-  box-shadow: var(--shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.page-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
-}
-
-.page-header h1 {
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
-  display: inline-block;
-}
-
-.page-header .lead {
-  color: var(--gray-color);
-  max-width: 600px;
+.container {
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-/* ===== FORMULAIRE PRINCIPAL ===== */
-.rendezvous-form {
-  background: white;
-  border: none;
+/* ===== HEADER DE LA PAGE ===== */
+.page-header {
+  text-align: center;
+  margin-bottom: 50px;
   position: relative;
-  transition: var(--transition);
 }
 
-.rendezvous-form:hover {
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
-}
-
-.rendezvous-form::before {
+.page-header::after {
   content: '';
   position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(45deg, var(--secondary-color), var(--light-color), var(--light-color));
-  z-index: -1;
-  border-radius: calc(var(--border-radius) + 4px);
-  opacity: 0.5;
+  bottom: -20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--blue-accent), transparent);
+  border-radius: 3px;
 }
 
-/* ===== RECHERCHE DE DENTISTE ===== */
+.display-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--white) 0%, var(--blue-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 15px;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  font-size: 1.2rem;
+  color: var(--gray-light);
+  font-weight: 400;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ===== MESSAGES ===== */
+.success-message,
+.error-message,
+.info-alert {
+  background: var(--glass);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--border-radius);
+  padding: 20px 25px;
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.success-message {
+  background: linear-gradient(135deg, rgba(76, 217, 100, 0.1), rgba(76, 217, 100, 0.05));
+  border-color: rgba(76, 217, 100, 0.3);
+  color: var(--success-color);
+}
+
+.error-message {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+  border-color: rgba(255, 107, 107, 0.3);
+  color: var(--danger-color);
+}
+
+.info-alert {
+  background: linear-gradient(135deg, rgba(106, 169, 255, 0.1), rgba(106, 169, 255, 0.05));
+  border-color: rgba(106, 169, 255, 0.3);
+  color: var(--blue-light);
+}
+
+/* ===== FORMULAIRE ===== */
+.rendezvous-form {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--border-radius-xl);
+  padding: 40px;
+  box-shadow: var(--shadow);
+}
+
+.form-section {
+  margin-bottom: 40px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* ===== LABELS ===== */
+.section-label {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.section-label i {
+  color: var(--blue-accent);
+  font-size: 1.2rem;
+  margin-right: 10px;
+}
+
+.error-text {
+  color: var(--danger-color);
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+/* ===== RECHERCHE DENTISTE ===== */
 .search-dentiste-wrapper {
   position: relative;
-  margin-bottom: 1rem;
 }
 
-.search-dentiste-input {
-  padding: 1rem 1rem 1rem 3rem;
+.search-input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  color: var(--blue-accent);
+  font-size: 1.2rem;
+  z-index: 2;
+}
+
+.search-input {
+  width: 100%;
+  padding: 18px 60px 18px 55px;
+  background: var(--glass-light);
+  border: 2px solid var(--border-glass);
+  border-radius: var(--border-radius-lg);
+  color: var(--white);
   font-size: 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: var(--border-radius) !important;
-  transition: var(--transition);
-  background: var(--light-color);
-  height: 56px;
+  transition: all 0.3s ease;
 }
 
-.search-dentiste-input:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-  background: white;
+.search-input:focus {
   outline: none;
+  border-color: var(--blue-accent);
+  box-shadow: 0 0 0 3px rgba(106, 169, 255, 0.1);
 }
 
-.search-dentiste-wrapper .input-group-text {
+.search-input::placeholder {
+  color: var(--gray-light);
+}
+
+.clear-btn {
+  position: absolute;
+  right: 15px;
   background: transparent;
   border: none;
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  z-index: 10;
-  color: var(--gray-color);
-  padding-left: 1.25rem;
+  color: var(--gray-light);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 5px;
+  transition: all 0.3s ease;
 }
 
-/* ===== DROPDOWN DE RECHERCHE ===== */
+.clear-btn:hover {
+  color: var(--danger-color);
+}
+
+/* ===== DROPDOWN DENTISTE ===== */
 .dentiste-dropdown {
   position: absolute;
   top: calc(100% + 5px);
@@ -127,86 +237,65 @@
   z-index: 1000;
   max-height: 400px;
   overflow-y: auto;
-  background: white;
-  border: 2px solid var(--secondary-color);
+  background: var(--bg-dark-3);
+  border: 1px solid var(--border-glass);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  animation: slideDown 0.3s ease-out;
-  transform-origin: top center;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  backdrop-filter: blur(20px);
 }
 
 .dropdown-header {
-  padding: 1rem 1.5rem;
-  background: linear-gradient(90deg, var(--light-color), #f8f9fa);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-  font-weight: 600;
-  color: var(--dark-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 15px 20px;
+  background: var(--glass);
+  border-bottom: 1px solid var(--border-glass);
+  color: var(--gray-light);
+  font-size: 0.9rem;
 }
 
 .dropdown-list {
-  padding: 0.5rem 0;
+  padding: 10px 0;
 }
 
 .dropdown-item {
-  padding: 1rem 1.5rem;
+  padding: 15px 20px;
   cursor: pointer;
-  transition: var(--transition);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-
-.dropdown-item:last-child {
-  border-bottom: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .dropdown-item:hover {
-  background: linear-gradient(90deg, rgba(52, 152, 219, 0.05), rgba(26, 188, 156, 0.05));
-  padding-left: 2rem;
+  background: var(--glass-light);
 }
 
 .dropdown-item.selected {
-  background: linear-gradient(90deg, rgba(52, 152, 219, 0.1), rgba(26, 188, 156, 0.1));
-  border-left: 4px solid var(--accent-color);
+  background: linear-gradient(135deg, rgba(106, 169, 255, 0.1), transparent);
+  border-left: 4px solid var(--blue-accent);
 }
 
 .dropdown-empty {
-  padding: 3rem 1.5rem;
+  padding: 40px 20px;
   text-align: center;
-  color: var(--gray-color);
+  color: var(--gray-light);
 }
 
 .dropdown-empty i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  margin-bottom: 10px;
   opacity: 0.5;
 }
 
-/* ===== CARTE DENTISTE DANS DROPDOWN ===== */
 .dentiste-dropdown-info {
   display: flex;
   align-items: center;
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
+.dentiste-photo-wrapper {
+  margin-right: 15px;
+  flex-shrink: 0;
+}
 
 .dentiste-details {
   flex: 1;
@@ -214,660 +303,795 @@
 }
 
 .dentiste-name {
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 0.25rem;
-  font-size: 1.1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 5px;
+  font-size: 1rem;
 }
 
 .dentiste-speciality {
+  color: var(--blue-light);
   font-size: 0.9rem;
-  color: var(--accent-color);
-  margin-bottom: 0.25rem;
-  font-weight: 600;
   display: flex;
   align-items: center;
 }
 
-.dentiste-contact {
-  font-size: 0.85rem;
-  color: var(--gray-color);
-  display: flex;
-  align-items: center;
-}
-
-.dentiste-speciality i,
-.dentiste-contact i {
-  margin-right: 0.5rem;
-  font-size: 0.9em;
-}
-
-.selected-indicator {
-  color: var(--success-color);
-  font-size: 1.5rem;
-  margin-left: 1rem;
-  flex-shrink: 0;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
+.dentiste-speciality i {
+  margin-right: 8px;
+  color: var(--blue-accent);
 }
 
 /* ===== DENTISTE SÉLECTIONNÉ ===== */
 .selected-dentiste-display {
-  animation: fadeInUp 0.5s ease-out;
-  margin-top: 1.5rem;
+  margin-top: 20px;
+  animation: fadeIn 0.5s ease;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.selected-dentiste-display .card {
-  border: none;
+.dentiste-card {
+  background: linear-gradient(135deg, var(--glass-light), var(--glass));
+  border: 1px solid var(--border-glass);
   border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  backdrop-filter: blur(10px);
 }
 
-.selected-dentiste-display .card-header {
-  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-  border: none;
-  padding: 1.25rem 1.5rem;
-  font-size: 1.1rem;
+.dentiste-card-header {
+  background: linear-gradient(90deg, rgba(106, 169, 255, 0.2), rgba(106, 169, 255, 0.1));
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border-glass);
 }
 
-.selected-dentiste-display .card-body {
-  padding: 1.4rem;
-}
-
-
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.selected-dentiste-display .card-title {
-  color: var(--primary-color);
-  font-weight: 700;
-  margin-bottom: 1.2rem;
-  padding-bottom: 1rem;
-  border-bottom: 2px solid rgba(0, 0, 0, 0.1);
-  position: relative;
-}
-
-.selected-dentiste-display .card-title::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 155px;
-  height: 2px;
-  background: linear-gradient(90deg, var(--accent-color), var(--secondary-color));
-}
-
-.selected-dentiste-display .row p {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+.dentiste-card-title {
   margin: 0;
+  color: var(--white);
+  font-size: 1.1rem;
   display: flex;
   align-items: center;
 }
 
-.selected-dentiste-display .row p:last-child {
-  border-bottom: none;
+.dentiste-card-body {
+  padding: 25px;
 }
 
-.selected-dentiste-display .row p i {
-  width: 24px;
-  color: var(--secondary-color);
+.dentiste-info-row {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+@media (max-width: 576px) {
+  .dentiste-info-row {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+}
+
+.dentiste-photo-col {
+  flex-shrink: 0;
+}
+
+.dentiste-details-col {
+  flex: 1;
+}
+
+.dentiste-name-large {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 10px;
+}
+
+.dentiste-speciality-large {
+  color: var(--blue-light);
   font-size: 1.1rem;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
 }
 
-.selected-dentiste-display a {
-  color: var(--light-color);
-  text-decoration: none;
-  transition: var(--transition);
-  border-bottom: 1px dashed transparent;
+.dentiste-speciality-large i {
+  margin-right: 10px;
+  color: var(--blue-accent);
 }
 
-.selected-dentiste-display a:hover {
-  color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
+.change-dentiste-btn {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  color: var(--danger-color);
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.change-dentiste-btn:hover {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.2), rgba(255, 107, 107, 0.1));
+  transform: translateY(-2px);
+}
+
+/* ===== INPUTS DE FORMULAIRE ===== */
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--glass-light);
+  border: 2px solid var(--border-glass);
+  border-radius: var(--border-radius);
+  color: var(--white);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--blue-accent);
+  box-shadow: 0 0 0 3px rgba(106, 169, 255, 0.1);
+}
+
+.form-input.error {
+  border-color: var(--danger-color);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--gray-light);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ===== CRÉNEAUX HORAIRES ===== */
+.loading-slots {
+  text-align: center;
+  padding: 40px;
+  color: var(--gray-light);
+  background: var(--glass);
+  border-radius: var(--border-radius);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--glass-light);
+  border-top-color: var(--blue-accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.time-stats {
+  background: var(--glass);
+  border-radius: var(--border-radius);
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-glass);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  text-align: center;
+}
+
+.stat-item {
+  padding: 15px;
+  background: var(--glass-light);
+  border-radius: var(--border-radius);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.stat-number.success {
+  color: var(--success-color);
+}
+
+.stat-number.danger {
+  color: var(--danger-color);
+}
+
+.stat-number.primary {
+  color: var(--blue-accent);
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: var(--gray-light);
+}
+
+.time-slots-container {
+  background: var(--glass-light);
+  border-radius: var(--border-radius);
+  padding: 25px;
+  border: 1px solid var(--border-glass);
+}
+
+.time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 15px;
+  background: var(--glass-dark);
+  border-radius: var(--border-radius);
+  margin-bottom: 20px;
+}
+
+.time-slots-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.time-slots-grid::-webkit-scrollbar-track {
+  background: var(--glass);
+  border-radius: 4px;
+}
+
+.time-slots-grid::-webkit-scrollbar-thumb {
+  background: var(--blue-accent);
+  border-radius: 4px;
+}
+
+.time-slots-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-light);
+}
+
+/* Créneau horaire */
+.time-slot {
+  padding: 20px 15px;
+  border: 2px solid transparent;
+  border-radius: var(--border-radius);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--glass);
+}
+
+.time-slot.available {
+  border-color: rgba(76, 217, 100, 0.3);
+  animation: pulseAvailable 2s infinite;
+}
+
+.time-slot.available:hover {
+  border-color: var(--success-color);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(76, 217, 100, 0.2);
+}
+
+.time-slot.occupied {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 107, 107, 0.05),
+    rgba(255, 107, 107, 0.05) 10px,
+    rgba(255, 107, 107, 0.02) 10px,
+    rgba(255, 107, 107, 0.02) 20px
+  );
+  border-color: rgba(255, 107, 107, 0.3);
+  cursor: not-allowed;
+  position: relative;
+}
+
+.time-slot.occupied::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -25%;
+  right: -25%;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--danger-color),
+    var(--danger-color) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  transform: rotate(-45deg);
+  z-index: 1;
+}
+
+.time-slot.selected {
+  background: linear-gradient(135deg, rgba(106, 169, 255, 0.2), rgba(106, 169, 255, 0.1));
+  border-color: var(--blue-accent);
+  color: var(--blue-light);
+  box-shadow: 0 5px 20px rgba(106, 169, 255, 0.3);
+  animation: none;
+}
+
+@keyframes pulseAvailable {
+  0% {
+    box-shadow: 0 0 0 0 rgba(76, 217, 100, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(76, 217, 100, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(76, 217, 100, 0);
+  }
+}
+
+.time-display {
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  color: inherit;
+}
+
+.time-status {
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+}
+
+.time-status i {
+  font-size: 1rem;
+}
+
+.time-slot.available .time-status {
+  color: var(--success-color);
+}
+
+.time-slot.occupied .time-status {
+  color: var(--danger-color);
+}
+
+.time-slot.selected .time-status {
+  color: var(--blue-light);
+}
+
+/* Légende */
+.time-legend {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-glass);
+}
+
+@media (max-width: 576px) {
+  .time-legend {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray-light);
+  font-size: 0.9rem;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 2px solid transparent;
+}
+
+.legend-dot.available {
+  background: var(--success-color);
+  animation: pulseAvailable 2s infinite;
+}
+
+.legend-dot.occupied {
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 107, 107, 0.8),
+    rgba(255, 107, 107, 0.8) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+}
+
+.legend-dot.selected {
+  background: linear-gradient(135deg, var(--blue-accent), var(--blue-light));
 }
 
 /* ===== SERVICES MÉDICAUX ===== */
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .service-card {
-  background: white;
-  border: 2px solid #e0e0e0;
+  background: var(--glass-light);
+  border: 1px solid var(--border-glass);
   border-radius: var(--border-radius);
-  padding: 1.5rem;
+  padding: 25px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
   position: relative;
   overflow: hidden;
 }
 
-.service-card:hover {
-  transform: translateY(-5px);
-  border-color: var(--secondary-color);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
-
-.service-card.selected {
-  border-color: var(--accent-color);
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f8ff 100%);
-}
-
-.service-card.selected::before {
+.service-card::before {
   content: '';
   position: absolute;
   top: 0;
+  left: 0;
   right: 0;
-  width: 60px;
-  height: 60px;
-  background: var(--accent-color);
-  border-radius: 0 0 0 100%;
-  z-index: 1;
+  height: 4px;
+  background: transparent;
+  transition: all 0.4s ease;
+}
+
+.service-card:hover {
+  border-color: var(--blue-accent);
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-light);
+}
+
+.service-card:hover::before {
+  background: linear-gradient(90deg, var(--blue-accent), var(--blue-light));
+}
+
+.service-card.selected {
+  background: linear-gradient(135deg, rgba(106, 169, 255, 0.1), rgba(106, 169, 255, 0.05));
+  border-color: var(--blue-accent);
+  transform: translateY(-3px);
+}
+
+.service-card.selected::before {
+  background: linear-gradient(90deg, var(--blue-accent), var(--blue-light));
+  height: 4px;
 }
 
 .service-card.selected::after {
-  content: '✓';
+  content: '✓ Sélectionné';
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 15px;
+  right: -30px;
+  background: linear-gradient(135deg, var(--blue-accent), var(--blue-light));
   color: white;
-  font-weight: bold;
-  font-size: 1.2rem;
-  z-index: 2;
+  padding: 4px 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transform: rotate(45deg);
+  box-shadow: 0 3px 10px rgba(106, 169, 255, 0.3);
 }
 
 .service-header {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 15px;
+  margin-bottom: 15px;
 }
 
-.service-header .form-check {
-  margin-right: 1rem;
-  margin-bottom: 0;
+.service-checkbox {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
-.service-header .form-check-input {
-  width: 1.3em;
-  height: 1.3em;
-  border: 2px solid var(--gray-color);
+.checkbox-input {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border-glass);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+  position: relative;
+  transition: all 0.3s ease;
 }
 
-.service-header .form-check-input:checked {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
+.checkbox-input:checked {
+  background: var(--blue-accent);
+  border-color: var(--blue-accent);
+}
+
+.checkbox-input:checked::before {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .service-title {
   flex: 1;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin: 0;
   font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--white);
+  margin: 0;
 }
 
 .service-price {
-  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
+  background: linear-gradient(135deg, var(--blue-accent), var(--blue-light));
   color: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px; /* Plus carré que rond */
+  padding: 8px 16px;
+  border-radius: 20px;
   font-weight: 700;
-  font-size: 1rem;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
-  min-width: 80px;
-  text-align: center;
-  display: inline-block;
-  transition: var(--transition);
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
-.service-body {
-  padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-}
 .service-description {
-  color: var(--gray-color);
-  font-size: rem;
+  color: var(--gray-light);
+  font-size: 0.95rem;
   line-height: 1.5;
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
-/* ===== RÉSUMÉ DES SERVICES ===== */
-.selected-services-summary {
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f8ff 100%);
-  border: 2px solid var(--secondary-color);
-  border-radius: var(--border-radius);
-  animation: slideInLeft 0.5s ease-out;
-}
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.selected-services-summary h6 {
-  color: var(--primary-color);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.selected-services-summary h6 i {
-  font-size: 1.5rem;
-}
-
-.list-group-item {
-  border: none;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-  padding: 1rem 0;
-  background: transparent;
-}
-
-.list-group-item:last-child {
-  border-bottom: none !important;
-}
-
-.selected-services-summary .badge {
-  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
-  padding: 0.6rem 1.2rem;
-  font-size: 1rem;
-}
-
-/* ===== CHAMPS DE FORMULAIRE ===== */
-.form-label {
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  font-size: 1.1rem;
-}
-
-.form-label i {
-  margin-right: 0.75rem;
-  color: var(--secondary-color);
-  font-size: 1.2rem;
-}
-
-.form-control, .form-select {
-  padding: 0.875rem 1.25rem;
-  border: 2px solid #e0e0e0;
-  border-radius: var(--border-radius);
-  font-size: 1rem;
-  transition: var(--transition);
-  background: var(--light-color);
-}
-
-.form-control:focus, .form-select:focus {
-  border-color: var(--secondary-color);
-  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-  background: white;
-  outline: none;
-}
-
-.form-text {
-  color: var(--gray-color);
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.form-text i {
-  margin-right: 0.5rem;
-}
-
-/* ===== BOUTONS RADIO (PREMIÈRE VISITE) ===== */
-.btn-group {
-  border: 2px solid #e0e0e0;
-  border-radius: var(--border-radius);
-  overflow: hidden;
-}
-
-.btn-check:checked + .btn-outline-primary {
-  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
-  color: white;
-  border-color: transparent;
-}
-
-.btn-outline-primary {
-  border: none;
-  padding: 0.75rem 2rem;
-  font-weight: 600;
-  transition: var(--transition);
-}
-
-.btn-outline-primary:hover {
-  background: rgba(52, 152, 219, 0.1);
-  color: var(--secondary-color);
-}
-
-/* ===== BOUTONS D'ACTION ===== */
+/* ===== BOUTONS ===== */
 .form-actions {
-  padding-top: 2rem;
-  border-top: 2px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid var(--border-glass);
 }
 
-.btn {
-  padding: 1rem 2.5rem;
-  font-weight: 700;
+@media (max-width: 576px) {
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+.cancel-btn,
+.submit-btn {
+  padding: 18px 40px;
+  border-radius: var(--border-radius-lg);
+  font-weight: 600;
   font-size: 1.1rem;
-  border-radius: var(--border-radius);
-  transition: var(--transition) !important;
-  display: inline-flex;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+  display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid transparent;
+  min-width: 200px;
 }
 
-.btn-lg {
-  padding: 1.25rem 3rem;
+@media (max-width: 576px) {
+  .cancel-btn,
+  .submit-btn {
+    width: 100%;
+    min-width: auto;
+  }
 }
 
-.btn-primary {
-  background: linear-gradient(90deg, var(--secondary-color), var(--accent-color));
-  border: none;
-  position: relative;
-  overflow: hidden;
+.cancel-btn {
+  background: linear-gradient(135deg, rgba(160, 174, 192, 0.1), rgba(160, 174, 192, 0.05));
+  border: 1px solid var(--border-glass);
+  color: var(--gray-light);
 }
 
-.btn-primary:hover {
+.cancel-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(160, 174, 192, 0.2), rgba(160, 174, 192, 0.1));
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+  color: var(--white);
 }
 
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: 0.5s;
-}
-
-.btn-primary:hover::before {
-  left: 100%;
-}
-
-.btn-outline-secondary {
-  border: 2px solid var(--gray-color);
-  color: var(--gray-color);
-}
-
-.btn-outline-secondary:hover {
-  background: var(--gray-color);
-  border-color: var(--gray-color);
+.submit-btn {
+  background: linear-gradient(135deg, var(--blue-accent), var(--blue-light));
   color: white;
-  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(106, 169, 255, 0.3);
 }
 
-.btn-outline-danger {
-  border: 2px solid var(--danger-color);
-  color: var(--danger-color);
-  padding: 0.5rem 1.5rem;
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 40px rgba(106, 169, 255, 0.4);
 }
 
-.btn-outline-danger:hover {
-  background: var(--danger-color);
-  color: white;
-}
-
-.btn:disabled {
+.submit-btn:disabled,
+.cancel-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none !important;
 }
 
-/* ===== ALERTES ===== */
-.alert {
-  border: none;
-  border-radius: var(--border-radius);
-  padding: 1.25rem 1.5rem;
-  margin-bottom: 1.5rem;
-  animation: slideInRight 0.5s ease-out;
-  position: relative;
+.submit-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 10px;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===== UTILITAIRES ===== */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
   overflow: hidden;
-}
-
-.alert::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 5px;
-  height: 100%;
-}
-
-.alert-success {
-  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-  color: #155724;
-}
-
-.alert-success::before {
-  background: var(--success-color);
-}
-
-.alert-danger {
-  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-  color: #721c24;
-}
-
-.alert-danger::before {
-  background: var(--danger-color);
-}
-
-.alert-warning {
-  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-  color: #856404;
-}
-
-.alert-warning::before {
-  background: var(--warning-color);
-}
-
-.alert i {
-  font-size: 1.2rem;
-  margin-right: 0.75rem;
-}
-
-.btn-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-}
-
-/* ===== SPINNER ===== */
-.spinner-border {
-  width: 3rem;
-  height: 3rem;
-  border-width: 0.25em;
-}
-
-/* ===== SCROLLBAR PERSONNALISÉE ===== */
-.dentiste-dropdown::-webkit-scrollbar {
-  width: 8px;
-}
-
-.dentiste-dropdown::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
-}
-
-.dentiste-dropdown::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--secondary-color), var(--accent-color));
-  border-radius: 4px;
-}
-
-.dentiste-dropdown::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, var(--secondary-color), var(--accent-color));
-  opacity: 0.8;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .rendezvous-page {
-    padding: 1rem 0;
+    padding: 100px 15px 40px;
   }
   
-  .page-header {
-    padding: 2rem 1rem;
-    margin: 1rem;
+  .display-title {
+    font-size: 2.2rem;
   }
   
   .rendezvous-form {
-    padding: 1.5rem;
-    margin: 0 1rem;
+    padding: 25px;
   }
   
-  .services-grid {
+  .time-slots-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .display-title {
+    font-size: 1.8rem;
+  }
+  
+  .rendezvous-form {
+    padding: 20px;
+  }
+  
+  .time-slots-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stats-grid {
     grid-template-columns: 1fr;
   }
-  
-  .dentiste-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
-  }
-  
-  .selected-dentiste-avatar {
-    width: 70px;
-    height: 70px;
-    font-size: 2.5rem;
-  }
-  
-  .btn-lg {
-    padding: 1rem 1.5rem;
-    font-size: 1rem;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .form-actions .btn {
-    width: 100%;
-  }
-  
-  .dropdown-item {
-    padding: 0.875rem 1rem;
-  }
-  
-  .dentiste-name {
-    font-size: 1rem;
-  }
-  
-  .dentiste-speciality,
-  .dentiste-contact {
-    font-size: 0.85rem;
-  }
+}
+/* Styles pour le dropdown des dentistes */
+.dentiste-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin-top: 8px;
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
 }
 
-@media (max-width: 576px) {
-  .page-header h1 {
-    font-size: 2rem;
-  }
-  
-  .page-header .lead {
-    font-size: 1rem;
-  }
-  
-  .search-dentiste-input {
-    font-size: 0.95rem;
-    padding: 0.875rem 0.875rem 0.875rem 2.5rem;
-  }
-  
-  .selected-dentiste-display .card-body {
-    padding: 1.5rem;
-  }
-  
-  .selected-dentiste-display .row p {
-    font-size: 0.95rem;
-  }
+.dropdown-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 12px 12px 0 0;
 }
 
-/* ===== ANIMATIONS GLOBALES ===== */
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.dropdown-header small {
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
-/* ===== UTILITAIRES ===== */
-.text-muted i {
-  margin-right: 0.5rem;
+.dropdown-list {
+  padding: 8px;
 }
 
-.is-invalid {
-  border-color: var(--danger-color) !important;
-  background: rgba(231, 76, 60, 0.05) !important;
-}
-
-.text-danger {
-  color: var(--danger-color) !important;
+.dropdown-item {
   display: flex;
   align-items: center;
+  padding: 12px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
 }
 
-.text-danger i {
-  margin-right: 0.5rem;
+.dropdown-item:hover {
+  background: #f1f5f9;
 }
 
-.visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip: rect(0, 0, 0, 0) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
+.dropdown-item.selected {
+  background: #eff6ff;
+  border: 1px solid #3b82f6;
 }
 
-/* ===== LOADING STATE ===== */
-.container.text-center .spinner-border {
-  border-color: var(--secondary-color);
-  border-right-color: transparent;
+.dropdown-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: #64748b;
+}
+
+.dropdown-empty i {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #cbd5e1;
+}
+
+.dropdown-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.dentiste-dropdown-info {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 12px;
+}
+
+.dentiste-details {
+  flex: 1;
+}
+
+.dentiste-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+  line-height: 1.2;
+}
+
+.dentiste-speciality {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dentiste-speciality i {
+  font-size: 0.8rem;
+  color: #f59e0b;
+}
+
+.dentiste-photo-wrapper {
+  flex-shrink: 0;
 }

@@ -1,61 +1,655 @@
-.patient-page {
-  padding: 2rem 0;
+/* =========================
+   VARIABLES
+========================= */
+:root {
+  --bg-dark: #0b1c33;
+  --bg-dark-2: #0a1528;
+  --bg-darker: #070f1c;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-light: rgba(255, 255, 255, 0.12);
+  --glass-medium: rgba(255, 255, 255, 0.15);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-light: rgba(255, 255, 255, 0.25);
+  --white: #000000;
+  --text-light: rgba(0, 0, 0, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --blue-accent: #6aa9ff;
+  --blue-gradient: linear-gradient(135deg, #6aa9ff, #4d8dff);
+  --purple-gradient: linear-gradient(135deg, #9d6bff, #7b4dff);
+  --green-gradient: linear-gradient(135deg, #2ecc71, #27ae60);
+  --success: #2ecc71;
+  --danger: #e74c3c;
+  --warning: #f39c12;
 }
 
-.patient-form {
-  background: white;
-  padding: 2.5rem;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+/* =========================
+   BASE
+========================= */
+/* VIDEO BACKGROUND */
+.video-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -3;
 }
 
-.patient-form .row {
+/* OVERLAY */
+.video-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(
+    500deg,
+    rgba(3, 6, 11, 0.85),
+    rgba(1, 2, 3, 0.95)
+  );
+  z-index: -2;
+}
+.patient-page-glass {
+  min-height: 100vh;
+  background: linear-gradient(deg, var(--bg-darker) 0%, var(--bg-dark) 100%);
+  color: var(--text-light);
+  padding: 100px 20px 50px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.patient-container-glass {
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* =========================
+   HEADER
+========================= */
+.patient-header-glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2rem 3rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-left: 5px solid var(--blue-accent);
+}
+
+.header-content-glass {
+  text-align: center;
+}
+
+
+.header-title-glass {
+  font-size: 4rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(200deg, var(--white), var(--blue-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-subtitle-glass {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* =========================
+   FORM CONTAINER
+========================= */
+.patient-form-container-glass {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* =========================
+   PHOTO SIDEBAR (GAUCHE)
+========================= */
+.photo-sidebar-glass {
+  position: sticky;
+  top: 120px;
+}
+
+.photo-upload-card-glass {
+  background: var(--blue);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  height: 100%;
+}
+
+.photo-title-glass {
+  font-size: 1.3rem;
+  font-weight: 600;
   margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-glass);
+  color: var(--blue-accent);
+  display: flex;
+  align-items: center;
 }
 
-.patient-form .form-label {
-  color: #2c3e50;
+.photo-upload-area-glass {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Upload prompt */
+.upload-prompt-glass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  border: 2px dashed var(--border-glass);
+  border-radius: 15px;
+  background: var(--glass-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 250px;
+}
+
+.upload-prompt-glass:hover {
+  border-color: var(--blue-accent);
+  background: var(--glass-medium);
+  transform: translateY(-2px);
+}
+
+.upload-icon-glass {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: var(--blue-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: rgb(255, 255, 255);
+}
+
+.upload-text-glass {
+  font-size: 1.1rem;
   font-weight: 500;
   margin-bottom: 0.5rem;
 }
 
-.patient-form .form-control,
-.patient-form .form-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+.upload-hint-glass {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Photo preview */
+.photo-preview-glass {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.photo-wrapper-glass {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.photo-image-glass {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 15px;
+  border: 3px solid var(--border-light);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
 }
 
-.patient-form .form-control:focus,
-.patient-form .form-select:focus {
-  border-color: #1a6bb3;
-  box-shadow: 0 0 0 0.25rem rgba(26, 107, 179, 0.25);
+.photo-image-glass:hover {
+  transform: scale(1.02);
+  border-color: var(--blue-accent);
 }
 
-.patient-form .form-check-input {
-  width: 1.2em;
-  height: 1.2em;
-  margin-right: 0.5rem;
+.remove-photo-glass {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 2px solid white;
+  color: rgb(0, 0, 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 
-.patient-form .form-check-input:checked {
-  background-color: #1a6bb3;
-  border-color: #1a6bb3;
+.remove-photo-glass:hover {
+  transform: scale(1.1);
+  background: #c0392b;
 }
 
-.patient-form .btn-lg {
-  padding: 0.75rem 2.5rem;
+.photo-info-glass {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: var(--glass-light);
+  border-radius: 10px;
+  border: 1px solid var(--border-glass);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Photo tips */
+.photo-tips-glass {
+  background: var(--bg-dark);
+  border-radius: 15px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-glass);
+  margin-top: 2rem;
+}
+
+.photo-tips-glass h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--blue-accent);
+  display: flex;
+  align-items: center;
+}
+
+.photo-tips-glass ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.photo-tips-glass li {
+  padding: 0.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.photo-tips-glass li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--success);
+  font-weight: bold;
+}
+
+/* =========================
+   FORM CONTENT (DROITE)
+========================= */
+.form-content-glass {
+  background: var(--bg-dark);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.patient-form-glass {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Form sections */
+.form-section-glass {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-glass);
+  border-radius: 15px;
+  padding: 1.5rem 2rem;
+  transition: all 0.3s ease;
+}
+
+.form-section-glass:hover {
+  border-color: var(--border-light);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.section-header-glass {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.section-title-glass {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--blue-accent);
+  display: flex;
+  align-items: center;
+}
+
+/* Form elements */
+.form-label-glass {
+  color: var(--text-light);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.form-label-glass.required:after {
+  content: "*";
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+.form-input-glass,
+.form-select-glass {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--bg-darker);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-input-glass:focus,
+.form-select-glass:focus {
+  outline: none;
+  border-color: var(--blue-accent);
+  box-shadow: 0 0 0 3px rgba(106, 169, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.form-input-glass::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+
+.form-hint-glass {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Radio buttons */
+.radio-group-glass {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.radio-option-glass {
+  flex: 1;
+}
+
+.radio-input-glass {
+  display: none;
+}
+
+.radio-label-glass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  font-weight: 500;
+}
+
+.radio-input-glass:checked + .radio-label-glass {
+  background: var(--blue-gradient);
+  color: rgb(0, 0, 0);
+  border-color: var(--blue-accent);
+  box-shadow: 0 4px 15px rgba(106, 169, 255, 0.3);
+}
+
+.radio-label-glass:hover {
+  border-color: var(--blue-accent);
+  color: var(--text-light);
+}
+
+/* =========================
+   BUTTONS
+========================= */
+.form-actions-glass {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+.btn-glass-primary {
+  background: var(--blue-gradient);
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 30px;
+  font-weight: 600;
   font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  box-shadow: 0 4px 20px rgba(106, 169, 255, 0.3);
 }
 
-/* Responsive */
+.btn-glass-primary:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(106, 169, 255, 0.4);
+}
+
+.btn-glass-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-glass-secondary {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border-light);
+  padding: 1rem 2.5rem;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+}
+
+.btn-glass-secondary:hover {
+  background: var(--glass-light);
+  border-color: var(--blue-accent);
+  color: var(--blue-accent);
+  transform: translateY(-2px);
+}
+
+/* Spinner animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Required note */
+.required-note-glass {
+  text-align: center;
+  padding: 1rem;
+  background: rgba(231, 76, 60, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  margin-top: 1rem;
+}
+
+.required-note-glass small {
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1200px) {
+  .patient-form-container-glass {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .photo-sidebar-glass {
+    position: static;
+  }
+  
+  .photo-upload-card-glass {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  
+  .photo-tips-glass {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 992px) {
+  .patient-header-glass {
+    padding: 1.5rem 2rem;
+  }
+  
+  .header-title-glass {
+    font-size: 1.8rem;
+  }
+  
+  .form-content-glass {
+    padding: 2rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .patient-form {
+  .patient-page-glass {
+    padding: 80px 15px 30px;
+  }
+  
+  .photo-upload-card-glass {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions-glass {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn-glass-primary,
+  .btn-glass-secondary {
+    width: 100%;
+    min-width: unset;
+  }
+  
+  .radio-group-glass {
+    flex-direction: column;
+  }
+  
+  .form-section-glass {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .patient-header-glass {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .header-title-glass {
+    font-size: 1.5rem;
+  }
+  
+  .header-subtitle-glass {
+    font-size: 1rem;
+  }
+  
+  .form-content-glass {
     padding: 1.5rem;
   }
   
-  .patient-form .row {
-    margin-bottom: 1rem;
+  .photo-upload-card-glass {
+    padding: 1.5rem;
+  }
+  
+  .photo-image-glass {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .upload-prompt-glass {
+    padding: 2rem 1rem;
+    min-height: 200px;
+  }
+  
+  .upload-icon-glass {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
   }
 }
+
+/* Animation for form sections */
+.form-section-glass {
+  animation: slideUp 0.5s ease forwards;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+}
+
+/* Delay animations */
+.form-section-glass:nth-child(1) { animation-delay: 0.1s; }
+.form-section-glass:nth-child(2) { animation-delay: 0.2s; }
+.form-section-glass:nth-child(3) { animation-delay: 0.3s; }
+.form-section-glass:nth-child(4) { animation-delay: 0.4s; }

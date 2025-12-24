@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Rendezvous.css';
 
+const API_BASE_URL = 'http://localhost:8080/dentiste/api';
+const FILE_BASE_URL = 'http://localhost:8080/dentiste/api/files';
+
 const Rendezvous = () => {
   const [formData, setFormData] = useState({
     dateRv: '',
@@ -18,12 +21,13 @@ const Rendezvous = () => {
   const [selectedServiceIds, setSelectedServiceIds] = useState([]);
   const [selectedDentisteId, setSelectedDentisteId] = useState('');
   const [loading, setLoading] = useState(true);
-  const [testConnectionResult, setTestConnectionResult] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [stats, setStats] = useState({ available: 0, occupied: 0, total: 0 });
 
-  // Fermer le dropdown quand on clique en dehors
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -35,46 +39,165 @@ const Rendezvous = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fonction pour tester la connexion au backend
+  const generateAllTimeSlots = () => {
+    const slots = [];
+    const startHour = 8;
+    const endHour = 18;
+    const interval = 15;
+    
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += interval) {
+        const timeStr = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        slots.push({
+          time: timeStr,
+          available: true,
+          disabled: false,
+          isOccupied: false
+        });
+      }
+    }
+    return slots;
+  };
+
   const testBackendConnection = async () => {
     try {
-      console.log("Test de connexion au backend...");
-      
       const response = await fetch('http://localhost:8080/dentiste/api/services-medicaux/', {
         method: 'GET',
         headers: { 'Accept': 'application/json' },
       });
       
       const text = await response.text();
-      const result = { 
+      return { 
         success: response.ok,
         status: response.status,
-        text: text,
-        endpoint: 'services-medicaux'
+        text: text
       };
       
-      setTestConnectionResult(result);
-      return result;
-      
     } catch (error) {
-      console.error("Erreur de test:", error);
-      const result = { success: false, error: error.message };
-      setTestConnectionResult(result);
-      return result;
+      return { success: false, error: error.message };
     }
   };
 
-  // Charger les services médicaux et dentistes depuis la base de données
+  const loadOccupiedSlots = async (dentisteId, date) => {
+    try {
+      if (!dentisteId || !date) return [];
+      
+      const formattedDate = date;
+      const response = await fetch(
+        `http://localhost:8080/dentiste/api/rendezvous/dentiste/${dentisteId}`,
+        {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' },
+        }
+      );
+      
+      if (response.ok) {
+        const allRendezVous = await response.json();
+        const rendezvousDuJour = allRendezVous.filter(rdv => {
+          const rdvDate = rdv.dateRv ? 
+            (typeof rdv.dateRv === 'string' ? rdv.dateRv.split('T')[0] : rdv.dateRv) : 
+            null;
+          
+          return rdvDate === formattedDate && 
+                 rdv.statutRv !== 'Annulé' && 
+                 rdv.statutRv !== 'Terminé';
+        });
+        
+        const occupiedTimes = rendezvousDuJour
+          .map(rdv => {
+            if (rdv.heureRv) {
+              const timeStr = typeof rdv.heureRv === 'string' ? rdv.heureRv : rdv.heureRv.toString();
+              const timeParts = timeStr.split(':');
+              if (timeParts.length >= 2) {
+                const hours = parseInt(timeParts[0]);
+                const minutes = parseInt(timeParts[1]);
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+              }
+            }
+            return null;
+          })
+          .filter(time => time !== null);
+        
+        return occupiedTimes;
+      }
+      
+      return [];
+    } catch (error) {
+      console.error("Erreur chargement créneaux occupés:", error);
+      return [];
+    }
+  };
+
+  const updateTimeSlotsAvailability = async (dentisteId, date) => {
+    if (!dentisteId || !date) {
+      const slots = generateAllTimeSlots();
+      setTimeSlots(slots);
+      setStats({
+        available: slots.length,
+        occupied: 0,
+        total: slots.length
+      });
+      return;
+    }
+    
+    setIsCheckingAvailability(true);
+    
+    try {
+      const occupiedTimes = await loadOccupiedSlots(dentisteId, date);
+      const allSlots = generateAllTimeSlots();
+      
+      const updatedSlots = allSlots.map(slot => {
+        const isOccupied = occupiedTimes.includes(slot.time);
+        return {
+          ...slot,
+          available: !isOccupied,
+          disabled: isOccupied,
+          isOccupied: isOccupied
+        };
+      });
+      
+      const availableCount = updatedSlots.filter(slot => slot.available).length;
+      const occupiedCount = updatedSlots.filter(slot => slot.isOccupied).length;
+      
+      setTimeSlots(updatedSlots);
+      setStats({
+        available: availableCount,
+        occupied: occupiedCount,
+        total: updatedSlots.length
+      });
+      
+      if (formData.heureRv) {
+        const selectedSlot = updatedSlots.find(slot => slot.time === formData.heureRv);
+        if (selectedSlot && selectedSlot.isOccupied) {
+          setFormData(prev => ({ ...prev, heureRv: '' }));
+          setErrors(prev => ({
+            ...prev,
+            heureRv: "Le créneau sélectionné n'est plus disponible"
+          }));
+        }
+      }
+      
+    } catch (error) {
+      console.error("Erreur mise à jour disponibilité:", error);
+      const slots = generateAllTimeSlots();
+      setTimeSlots(slots);
+      setStats({
+        available: slots.length,
+        occupied: 0,
+        total: slots.length
+      });
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        console.log("Chargement des données depuis le backend...");
-        
         const testResult = await testBackendConnection();
         
         if (testResult.success) {
-          // Charger les services médicaux
           try {
             const servicesResponse = await fetch('http://localhost:8080/dentiste/api/services-medicaux/', {
               method: 'GET',
@@ -89,7 +212,6 @@ const Rendezvous = () => {
             console.error("Erreur chargement services:", servicesError);
           }
           
-          // Charger les dentistes
           try {
             const dentistesResponse = await fetch('http://localhost:8080/dentiste/api/dentistes/', {
               method: 'GET',
@@ -98,87 +220,147 @@ const Rendezvous = () => {
             
             if (dentistesResponse.ok) {
               const dentistesData = await dentistesResponse.json();
-              setDentistes(dentistesData);
+              const dentistesWithPhotos = dentistesData.map(dentiste => ({
+                ...dentiste,
+                photoUrl: dentiste.photoD ? 
+                  `${FILE_BASE_URL}/uploads/patients/${dentiste.photoD}` : 
+                  null
+              }));
+              setDentistes(dentistesWithPhotos);
             }
           } catch (dentistesError) {
             console.error("Erreur chargement dentistes:", dentistesError);
           }
           
         } else {
-          useTestData();
-          setErrors(prev => ({ 
-            ...prev, 
-            backend: `Mode démo activé: ${testResult.error || 'Serveur non accessible'}`
-          }));
+          setServicesMedicaux([
+            { 
+              numSM: 1, 
+              nomSM: "Consultation dentaire générale", 
+              descriptionSM: "Examen complet",
+              tarifSM: 50.00,
+              dureeSM: 30
+            },
+            { 
+              numSM: 2, 
+              nomSM: "Détartrage", 
+              descriptionSM: "Nettoyage professionnel",
+              tarifSM: 80.00,
+              dureeSM: 45
+            }
+          ]);
+          
+          setDentistes([
+            { 
+              idD: 1, 
+              nomD: "Martin", 
+              prenomD: "Pierre", 
+              emailD: "pierre.martin@clinique.com",
+              specialiteD: "Dentisterie générale",
+              telD: "01 23 45 67 89",
+              photoUrl: null
+            }
+          ]);
         }
         
       } catch (error) {
         console.error('Erreur générale:', error);
-        useTestData();
-        setErrors(prev => ({ 
-          ...prev, 
-          backend: `Erreur: ${error.message}` 
-        }));
       } finally {
         setLoading(false);
+        const slots = generateAllTimeSlots();
+        setTimeSlots(slots);
+        setStats({
+          available: slots.length,
+          occupied: 0,
+          total: slots.length
+        });
       }
-    };
-
-    const useTestData = () => {
-      console.log("Utilisation des données de test");
-      
-      // Services médicaux de test
-      const servicesTest = [
-        { 
-          numSM: 1, 
-          nomSM: "Consultation dentaire générale", 
-          descriptionSM: "Examen complet de la santé bucco-dentaire",
-          tarifSM: 50.00,
-        },
-        
-      ];
-      
-      // Dentistes de test
-      const dentistesTest = [
-        { 
-          idD: 1, 
-          nomD: "Martin", 
-          prenomD: "Pierre", 
-          emailD: "pierre.martin@clinique.com",
-          specialiteD: "Dentisterie générale",
-          telD: "01 23 45 67 89"
-        },
-        
-      ];
-      
-      setServicesMedicaux(servicesTest);
-      setDentistes(dentistesTest);
     };
 
     loadData();
   }, []);
 
-  // Filtrer les dentistes basé sur la recherche
+  useEffect(() => {
+    updateTimeSlotsAvailability(selectedDentisteId, formData.dateRv);
+  }, [selectedDentisteId, formData.dateRv]);
+
   const filteredDentistes = dentistes.filter(dentiste => {
     if (!searchTerm.trim()) return true;
-    
     const term = searchTerm.toLowerCase();
     return (
       dentiste.nomD.toLowerCase().includes(term) ||
       dentiste.prenomD.toLowerCase().includes(term) ||
-      dentiste.specialiteD.toLowerCase().includes(term) ||
-      `${dentiste.prenomD} ${dentiste.nomD}`.toLowerCase().includes(term)
+      (dentiste.specialiteD && dentiste.specialiteD.toLowerCase().includes(term))
     );
   });
 
-  // Dentiste sélectionné
   const selectedDentiste = dentistes.find(d => d.idD === parseInt(selectedDentisteId));
+
+  const DentistePhoto = ({ dentiste, size = 'md' }) => {
+    const sizes = { sm: '40px', md: '60px', lg: '80px', xl: '100px' };
+    const [imgError, setImgError] = useState(false);
+    
+    const getInitials = (prenom, nom) => {
+      return `${prenom?.charAt(0) || ''}${nom?.charAt(0) || ''}`.toUpperCase();
+    };
+    
+    const getAvatarColor = (id) => {
+      const colors = [
+        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+      ];
+      return colors[id % colors.length];
+    };
+    
+    if (dentiste?.photoUrl && !imgError) {
+      return (
+        <img 
+          src={dentiste.photoUrl} 
+          alt={`Dr. ${dentiste.prenomD} ${dentiste.nomD}`}
+          className="dentiste-photo"
+          style={{
+            width: sizes[size],
+            height: sizes[size],
+            borderRadius: '50%',
+            objectFit: 'cover',
+            border: '3px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+          }}
+          onError={() => setImgError(true)}
+        />
+      );
+    }
+    
+    return (
+      <div 
+        className="dentiste-avatar"
+        style={{
+          width: sizes[size],
+          height: sizes[size],
+          borderRadius: '50%',
+          background: getAvatarColor(dentiste?.idD || 0),
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: size === 'sm' ? '16px' : size === 'lg' ? '24px' : '20px',
+          border: '3px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+        }}
+      >
+        {getInitials(dentiste?.prenomD, dentiste?.nomD)}
+      </div>
+    );
+  };
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearchTerm(value);
     setShowDropdown(true);
-    
     if (selectedDentisteId && value === '') {
       setSelectedDentisteId('');
     }
@@ -188,16 +370,14 @@ const Rendezvous = () => {
     setSelectedDentisteId(dentiste.idD);
     setSearchTerm(`${dentiste.prenomD} ${dentiste.nomD} - ${dentiste.specialiteD}`);
     setShowDropdown(false);
-    
-    if (errors.dentiste) {
-      setErrors(prev => ({ ...prev, dentiste: '' }));
-    }
+    if (errors.dentiste) setErrors(prev => ({ ...prev, dentiste: '' }));
   };
 
   const handleClearSelection = () => {
     setSelectedDentisteId('');
     setSearchTerm('');
     setShowDropdown(true);
+    setFormData(prev => ({ ...prev, heureRv: '' }));
   };
 
   const handleChange = (e) => {
@@ -206,10 +386,19 @@ const Rendezvous = () => {
       ...prevState,
       [name]: value
     }));
-    
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const handleTimeSelect = (time, isAvailable) => {
+    if (!isAvailable) {
+      setErrors(prev => ({
+        ...prev,
+        heureRv: "Ce créneau n'est pas disponible. Veuillez en choisir un autre."
+      }));
+      return;
     }
+    setFormData(prev => ({ ...prev, heureRv: time }));
+    if (errors.heureRv) setErrors(prev => ({ ...prev, heureRv: '' }));
   };
 
   const handleSubmit = async (e) => {
@@ -221,91 +410,87 @@ const Rendezvous = () => {
     if (!selectedDentisteId) validationErrors.dentiste = "Veuillez sélectionner un dentiste";
     if (selectedServiceIds.length === 0) validationErrors.services = "Veuillez sélectionner au moins un service médical";
     
+    const selectedSlot = timeSlots.find(slot => slot.time === formData.heureRv);
+    if (selectedSlot && selectedSlot.isOccupied) {
+      validationErrors.heureRv = "Le créneau sélectionné n'est pas disponible";
+    }
+    
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
 
     setIsSubmitting(true);
-    setSuccessMessage('');
     setErrors({});
 
     try {
+      const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+      const patientId = storedUser?.idP;
+
+      if (!patientId) {
+        alert("Veuillez vous connecter pour prendre un rendez-vous");
+        return;
+      }
+
+      const patientInfo = storedUser;
       const rendezvousData = {
         dateRv: formData.dateRv,
         heureRv: formData.heureRv,
         detailsRv: formData.detailsRv || '',
         statutRv: "Planifié",
-        premiereVisite: formData.premiereVisite || 'non',
-        defautConstate: formData.defaut || '',
-        patient: {
-          idP: 1,
-          nomP: "Patient",
-          prenomP: "Test"
-        },
+        patient: { 
+          idP: patientId, 
+          nomP: patientInfo?.nomP || patientInfo?.name?.split(' ')[0] || "Patient", 
+          prenomP: patientInfo?.prenomP || patientInfo?.name?.split(' ')[1] || "Test",
+          emailP: patientInfo?.emailP || patientInfo?.email || ""
+        },        
         dentiste: {
           idD: parseInt(selectedDentisteId),
           nomD: selectedDentiste?.nomD || "",
           prenomD: selectedDentiste?.prenomD || "",
           emailD: selectedDentiste?.emailD || "",
-          specialiteD: selectedDentiste?.specialiteD || "",
-          actifD: true
+          specialiteD: selectedDentiste?.specialiteD || ""
         },
         services: selectedServiceIds.map(serviceId => {
           const service = servicesMedicaux.find(s => s.numSM === serviceId);
-          return {
-            numSM: serviceId,
-            description: service?.nomSM || "Service médical",
-            tarif: service?.tarifSM || 0,
-            nomSM: service?.nomSM || "",
-            
-          };
+          return { numSM: serviceId, nomSM: service?.nomSM || "Service" };
         })
       };
 
-      console.log("📤 Données envoyées au backend:", JSON.stringify(rendezvousData, null, 2));
-
       const response = await fetch('http://localhost:8080/dentiste/api/rendezvous/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(rendezvousData)
       });
 
       const responseText = await response.text();
-      console.log("📥 Réponse du backend:", responseText);
-      
       let data;
       try {
         data = responseText ? JSON.parse(responseText) : {};
       } catch (parseError) {
-        console.error("❌ Erreur parsing JSON:", parseError);
-        throw new Error(`Réponse invalide du serveur: ${responseText.substring(0, 200)}`);
+        console.error("Erreur parsing:", parseError);
+        throw new Error(`Réponse invalide du serveur: ${responseText}`);
       }
 
       if (response.ok) {
-        setSuccessMessage(`✅ Rendez-vous créé avec succès ! ID: ${data.rendezvousId || data.idRv || 'N/A'}`);
+        setSuccessMessage(`Rendez-vous créé avec succès !`);
         
-        setFormData({
-          dateRv: '',
-          heureRv: '',
-          detailsRv: '',
-          premiereVisite: 'non',
-          defaut: ''
-        });
+        setFormData({ dateRv: '', heureRv: '', detailsRv: '', premiereVisite: 'non', defaut: '' });
         setSelectedServiceIds([]);
         setSelectedDentisteId('');
         setSearchTerm('');
         setShowDropdown(false);
+        
+        if (selectedDentisteId && formData.dateRv) {
+          updateTimeSlotsAvailability(selectedDentisteId, formData.dateRv);
+        }
         
         setTimeout(() => setSuccessMessage(''), 5000);
       } else {
         throw new Error(data.error || `Erreur ${response.status}: ${responseText}`);
       }
     } catch (error) {
-      console.error('❌ Erreur complète:', error);
+      console.error("Erreur création rendez-vous:", error);
       setErrors({ submit: error.message });
     } finally {
       setIsSubmitting(false);
@@ -313,13 +498,7 @@ const Rendezvous = () => {
   };
 
   const handleReset = () => {
-    setFormData({
-      dateRv: '',
-      heureRv: '',
-      detailsRv: '',
-      premiereVisite: 'non',
-      defaut: ''
-    });
+    setFormData({ dateRv: '', heureRv: '', detailsRv: '', premiereVisite: 'non', defaut: '' });
     setSelectedServiceIds([]);
     setSelectedDentisteId('');
     setSearchTerm('');
@@ -335,21 +514,39 @@ const Rendezvous = () => {
     }, 0);
   };
 
-  const calculateDureeTotale = () => {
-    return selectedServiceIds.reduce((total, serviceId) => {
-      const service = servicesMedicaux.find(s => s.numSM === serviceId);
-      return total + (service?.dureeSM || 0);
-    }, 0);
+  const TimeSlot = ({ slot, isSelected, onSelect }) => {
+    return (
+      <div
+        className={`time-slot ${slot.isOccupied ? 'occupied' : 'available'} ${isSelected ? 'selected' : ''}`}
+        onClick={() => !slot.isOccupied && onSelect(slot.time, slot.available)}
+        title={slot.isOccupied ? "Créneau déjà réservé" : "Créneau disponible"}
+      >
+        <div className="time-display">{slot.time}</div>
+        <div className="time-status">
+          {slot.isOccupied ? (
+            <>
+              <i className="bi bi-x-circle-fill"></i>
+              <span>Occupé</span>
+            </>
+          ) : (
+            <>
+              <i className="bi bi-check-circle-fill"></i>
+              <span>Disponible</span>
+            </>
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (loading) {
     return (
       <div className="rendezvous-page">
         <div className="container text-center py-5">
-          <div className="spinner-border text-primary" role="status">
+          <div className="spinner-border text-blue-accent" role="status">
             <span className="visually-hidden">Chargement...</span>
           </div>
-          <p className="mt-3">Chargement des données...</p>
+          <p className="mt-3 text-white">Chargement des données...</p>
         </div>
       </div>
     );
@@ -359,110 +556,74 @@ const Rendezvous = () => {
     <div className="rendezvous-page">
       <div className="container">
         <div className="page-header text-center mb-5">
-          <h1 className="display-5 fw-bold text-primary">
+          <h1 className="display-title">
             <i className="bi bi-calendar-plus me-2"></i>
             Prendre un rendez-vous dentaire
           </h1>
-          <p className="lead text-muted">
+          <p className="page-subtitle">
             Sélectionnez un dentiste et les services médicaux nécessaires
           </p>
         </div>
 
-        {/* Messages d'information */}
-        {testConnectionResult && !testConnectionResult.success && (
-          <div className="alert alert-warning alert-dismissible fade show" role="alert">
-            <i className="bi bi-exclamation-triangle me-2"></i>
-            <strong>Mode démo activé :</strong> {errors.backend}
-            <button 
-              type="button" 
-              className="btn-close" 
-              onClick={() => setErrors(prev => ({ ...prev, backend: '' }))}
-              aria-label="Close"
-            ></button>
-          </div>
-        )}
-
         {successMessage && (
-          <div className="alert alert-success alert-dismissible fade show" role="alert">
+          <div className="success-message">
             <i className="bi bi-check-circle me-2"></i>
             {successMessage}
-            <button 
-              type="button" 
-              className="btn-close" 
-              onClick={() => setSuccessMessage('')}
-              aria-label="Close"
-            ></button>
           </div>
         )}
 
         {errors.submit && (
-          <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <div className="error-message">
             <i className="bi bi-x-circle me-2"></i>
-            <strong>Erreur :</strong> {errors.submit}
-            <button 
-              type="button" 
-              className="btn-close" 
-              onClick={() => setErrors(prev => ({ ...prev, submit: '' }))}
-              aria-label="Close"
-            ></button>
+            {errors.submit}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="rendezvous-form shadow-lg p-4 rounded-3">
+        <form onSubmit={handleSubmit} className="rendezvous-form">
           
-          {/* SECTION 1: Recherche et sélection du dentiste */}
-          <div className="mb-4" ref={dropdownRef}>
-            <label className="form-label fw-bold">
+          {/* SECTION 1: Recherche dentiste */}
+          <div className="form-section" ref={dropdownRef}>
+            <label className="section-label">
               <i className="bi bi-search me-2"></i>
               Rechercher et sélectionner votre dentiste *
             </label>
             {errors.dentiste && (
-              <div className="text-danger small mb-2">
+              <div className="error-text">
                 <i className="bi bi-exclamation-circle me-1"></i>
                 {errors.dentiste}
               </div>
             )}
 
-            {/* Barre de recherche avec dropdown */}
             <div className="search-dentiste-wrapper">
-              <div className="input-group">
-                <span className="input-group-text">
+              <div className="search-input-group">
+                <span className="search-icon">
                   <i className="bi bi-search"></i>
                 </span>
                 <input
                   type="text"
-                  className="form-control search-dentiste-input"
-                  placeholder="Rechercher un dentiste par nom, prénom ou spécialité..."
+                  className="search-input"
+                  placeholder="Rechercher un dentiste..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                   onFocus={() => setShowDropdown(true)}
-                  autoComplete="off"
                 />
                 {selectedDentisteId && (
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={handleClearSelection}
-                  >
+                  <button type="button" className="clear-btn" onClick={handleClearSelection}>
                     <i className="bi bi-x-circle"></i>
                   </button>
                 )}
               </div>
 
-              {/* Dropdown des résultats */}
               {showDropdown && searchTerm && (
                 <div className="dentiste-dropdown">
                   <div className="dropdown-header">
-                    <small className="text-muted">
-                      {filteredDentistes.length} dentiste{filteredDentistes.length !== 1 ? 's' : ''} trouvé{filteredDentistes.length !== 1 ? 's' : ''}
-                    </small>
+                    <small>{filteredDentistes.length} dentiste(s) trouvé(s)</small>
                   </div>
                   <div className="dropdown-list">
                     {filteredDentistes.length === 0 ? (
                       <div className="dropdown-empty">
-                        <i className="bi bi-person-x fs-4 mb-2"></i>
-                        <p className="mb-0">Aucun dentiste trouvé</p>
-                        <small className="text-muted">Essayez un autre nom ou spécialité</small>
+                        <i className="bi bi-person-x"></i>
+                        <p>Aucun dentiste trouvé</p>
                       </div>
                     ) : (
                       filteredDentistes.map(dentiste => (
@@ -472,26 +633,18 @@ const Rendezvous = () => {
                           onClick={() => handleSelectDentiste(dentiste)}
                         >
                           <div className="dentiste-dropdown-info">
-    
+                            <div className="dentiste-photo-wrapper">
+                              <DentistePhoto dentiste={dentiste} size="sm" />
+                            </div>
                             <div className="dentiste-details">
                               <div className="dentiste-name">
                                 Dr. {dentiste.prenomD} {dentiste.nomD}
                               </div>
                               <div className="dentiste-speciality">
-                                <i className="bi bi-award me-1"></i>
-                                {dentiste.specialiteD}
-                              </div>
-                              <div className="dentiste-contact">
-                                <i className="bi bi-telephone me-1"></i>
-                                {dentiste.telD}
+                                <i className="bi bi-award"></i> {dentiste.specialiteD}
                               </div>
                             </div>
                           </div>
-                          {selectedDentisteId == dentiste.idD && (
-                            <div className="selected-indicator">
-                              <i className="bi bi-check-circle-fill text-success"></i>
-                            </div>
-                          )}
                         </div>
                       ))
                     )}
@@ -500,53 +653,30 @@ const Rendezvous = () => {
               )}
             </div>
 
-            {/* Affichage du dentiste sélectionné */}
             {selectedDentiste && (
-              <div className="selected-dentiste-display mt-3">
-                <div className="card border-primary">
-                  <div className="card-header bg-primary text-white">
-                    <h6 className="mb-0">
+              <div className="selected-dentiste-display">
+                <div className="dentiste-card">
+                  <div className="dentiste-card-header">
+                    <h6 className="dentiste-card-title">
                       <i className="bi bi-person-check me-2"></i>
                       Dentiste sélectionné
                     </h6>
-                  
-                  <div className="card-body">
-                    <div className="row">
-                
+                  </div>
+                  <div className="dentiste-card-body">
+                    <div className="dentiste-info-row">
+                      <div className="dentiste-photo-col">
+                        <DentistePhoto dentiste={selectedDentiste} size="lg" />
                       </div>
-                      <div className="col-md-10">
-                        <h5 className="card-title text-primary">
+                      <div className="dentiste-details-col">
+                        <h5 className="dentiste-name-large">
                           Dr. {selectedDentiste.prenomD} {selectedDentiste.nomD}
                         </h5>
-                        <div className="row mt-3">
-                          <div className="col-md-6">
-                            <p className="mb-2">
-                              <i className="bi bi-award me-2 text-success"></i>
-                              <strong>Spécialité :</strong> {selectedDentiste.specialiteD}
-                            </p>
-                            <p className="mb-2">
-                              <i className="bi bi-telephone me-2"></i>
-                              <strong>Téléphone :&nbsp;</strong> {selectedDentiste.telD}
-                            </p>
-                          </div>
-                          <div className="col-md-6">
-                            <p className="mb-2">
-                              <i className="bi bi-envelope me-2"></i>
-                              <strong>Email:  </strong> 
-                              <a href={`mailto:${selectedDentiste.emailD}`} className="ms-2">
-                                {selectedDentiste.emailD}
-                              </a>
-                            </p>
-                            <button
-                              type="button"
-                              className="btn btn-outline-danger btn-sm mt-2"
-                              onClick={handleClearSelection}
-                            >
-                              <i className="bi bi-x-circle me-1"></i>
-                              Changer de dentiste
-                            </button>
-                          </div>
-                        </div>
+                        <p className="dentiste-speciality-large">
+                          <i className="bi bi-award"></i> {selectedDentiste.specialiteD}
+                        </p>
+                        <button type="button" className="change-dentiste-btn" onClick={handleClearSelection}>
+                          <i className="bi bi-x-circle me-1"></i> Changer
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -556,21 +686,21 @@ const Rendezvous = () => {
           </div>
 
           {/* SECTION 2: Date et heure */}
-          <div className="row mb-4">
-            <div className="col-md-6">
-              <label className="form-label fw-bold">
+          <div className="form-row">
+            <div className="form-col">
+              <label className="section-label">
                 <i className="bi bi-calendar-date me-2"></i>
                 Date souhaitée *
               </label>
               {errors.dateRv && (
-                <div className="text-danger small mb-2">
+                <div className="error-text">
                   <i className="bi bi-exclamation-circle me-1"></i>
                   {errors.dateRv}
                 </div>
               )}
               <input
                 type="date"
-                className={`form-control ${errors.dateRv ? 'is-invalid' : ''}`}
+                className={`form-input ${errors.dateRv ? 'error' : ''}`}
                 name="dateRv"
                 value={formData.dateRv}
                 onChange={handleChange}
@@ -578,42 +708,92 @@ const Rendezvous = () => {
                 max={new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
                 required
               />
-              <div className="form-text">Du lundi au vendredi uniquement</div>
             </div>
-            <div className="col-md-6">
-              <label className="form-label fw-bold">
+            
+            <div className="form-col">
+              <label className="section-label">
                 <i className="bi bi-clock me-2"></i>
-                Heure souhaitée *
+                Créneaux horaires (8h-18h) *
               </label>
               {errors.heureRv && (
-                <div className="text-danger small mb-2">
+                <div className="error-text">
                   <i className="bi bi-exclamation-circle me-1"></i>
                   {errors.heureRv}
                 </div>
               )}
-              <input
-                type="time"
-                className={`form-control ${errors.heureRv ? 'is-invalid' : ''}`}
-                name="heureRv"
-                value={formData.heureRv}
-                onChange={handleChange}
-                min="08:00"
-                max="18:00"
-                step="900"
-                required
-              />
-              <div className="form-text">Créneaux de 15 minutes (8h00 - 18h00)</div>
+              
+              {!formData.dateRv || !selectedDentisteId ? (
+                <div className="info-alert">
+                  <i className="bi bi-info-circle me-2"></i>
+                  Sélectionnez d'abord un dentiste et une date
+                </div>
+              ) : isCheckingAvailability ? (
+                <div className="loading-slots">
+                  <div className="loading-spinner"></div>
+                  Chargement des créneaux...
+                </div>
+              ) : (
+                <>
+                  {/* Statistiques */}
+                  <div className="time-stats">
+                    <div className="stats-grid">
+                      <div className="stat-item">
+                        <div className="stat-number success">{stats.available}</div>
+                        <div className="stat-label">Disponibles</div>
+                      </div>
+                      <div className="stat-item">
+                        <div className="stat-number danger">{stats.occupied}</div>
+                        <div className="stat-label">Occupés</div>
+                      </div>
+                      <div className="stat-item">
+                        <div className="stat-number primary">{stats.total}</div>
+                        <div className="stat-label">Total</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Liste des créneaux */}
+                  <div className="time-slots-container">
+                    <div className="time-slots-grid">
+                      {timeSlots.map(slot => (
+                        <TimeSlot
+                          key={slot.time}
+                          slot={slot}
+                          isSelected={formData.heureRv === slot.time}
+                          onSelect={handleTimeSelect}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Légende */}
+                    <div className="time-legend">
+                      <div className="legend-item">
+                        <div className="legend-dot available"></div>
+                        <span>Disponible</span>
+                      </div>
+                      <div className="legend-item">
+                        <div className="legend-dot occupied"></div>
+                        <span>Occupé</span>
+                      </div>
+                      <div className="legend-item">
+                        <div className="legend-dot selected"></div>
+                        <span>Sélectionné</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
           {/* SECTION 3: Services médicaux */}
-          <div className="mb-4">
-            <label className="form-label fw-bold">
+          <div className="form-section">
+            <label className="section-label">
               <i className="bi bi-heart-pulse me-2"></i>
               Services médicaux *
             </label>
             {errors.services && (
-              <div className="text-danger small mb-2">
+              <div className="error-text">
                 <i className="bi bi-exclamation-circle me-1"></i>
                 {errors.services}
               </div>
@@ -622,136 +802,56 @@ const Rendezvous = () => {
             <div className="services-grid">
               {servicesMedicaux.map(service => (
                 <div 
-                  key={service.numSM} 
+                  key={service.numSM}
                   className={`service-card ${selectedServiceIds.includes(service.numSM) ? 'selected' : ''}`}
                   onClick={() => {
-                    const newSelected = selectedServiceIds.includes(service.numSM)
-                      ? selectedServiceIds.filter(id => id !== service.numSM)
-                      : [...selectedServiceIds, service.numSM];
-                    setSelectedServiceIds(newSelected);
+                    setSelectedServiceIds(prev => 
+                      prev.includes(service.numSM)
+                        ? prev.filter(id => id !== service.numSM)
+                        : [...prev, service.numSM]
+                    );
                   }}
                 >
                   <div className="service-header">
-                    <div className="form-check">
+                    <div className="service-checkbox">
                       <input
                         type="checkbox"
-                        className="form-check-input"
+                        className="checkbox-input"
                         checked={selectedServiceIds.includes(service.numSM)}
                         onChange={() => {}}
                       />
                     </div>
                     <h6 className="service-title">{service.nomSM}</h6>
-                    <span className="service-price">{service.tarifSM} €</span>
+                    <span className="service-price">{service.tarifSM} TND</span>
                   </div>
-                  <div className="service-body">
-                    <p className="service-description">{service.descriptionSM}</p>
-                    
-                  </div>
+                  <p className="service-description">{service.descriptionSM}</p>
                 </div>
               ))}
             </div>
-            
-            {/* Résumé des services sélectionnés */}
-            {selectedServiceIds.length > 0 && (
-              <div className="selected-services-summary mt-3 p-3 bg-light rounded">
-                <h6>
-                  <i className="bi bi-check2-circle me-2 text-success"></i>
-                  Services sélectionnés ({selectedServiceIds.length})
-                </h6>
-                <ul className="list-group list-group-flush">
-                  {selectedServiceIds.map(serviceId => {
-                    const service = servicesMedicaux.find(s => s.numSM === serviceId);
-                    return service ? (
-                      <li key={service.numSM} className="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                          <span>{service.nomSM}</span>
-                          <small className="text-muted d-block">{service.dureeSM} min</small>
-                        </div>
-                        <span className="badge bg-primary rounded-pill">{service.tarifSM} €</span>
-                      </li>
-                    ) : null;
-                  })}
-                </ul>
-                <div className="mt-2 text-end">
-                  <p className="mb-1">
-                    <strong>Durée totale:</strong> {calculateDureeTotale()} minutes
-                  </p>
-                  <p className="mb-0">
-                    <strong>Total:</strong> {calculateTotal()} €
-                  </p>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* SECTION 4: Informations supplémentaires */}
-          <div className="mb-4">
-            <label className="form-label fw-bold">
+          <div className="form-section">
+            <label className="section-label">
               <i className="bi bi-chat-left-text me-2"></i>
               Informations complémentaires
             </label>
             <textarea
-              className="form-control"
+              className="form-textarea"
               name="detailsRv"
               value={formData.detailsRv}
               onChange={handleChange}
               rows="3"
-              placeholder="Informations importantes (allergies, traitements en cours, médicaments, etc.)..."
+              placeholder="Allergies, traitements en cours..."
               maxLength="500"
             />
-            <div className="form-text">{formData.detailsRv.length}/500 caractères</div>
           </div>
 
-          {/* SECTION 5: Première visite */}
-          <div className="mb-4">
-            <label className="form-label fw-bold">Première visite chez nous ?</label>
-            <div className="btn-group" role="group">
-              <input
-                type="radio"
-                className="btn-check"
-                name="premiereVisite"
-                id="premiereVisiteOui"
-                value="oui"
-                checked={formData.premiereVisite === 'oui'}
-                onChange={handleChange}
-              />
-              <label className="btn btn-outline-primary" htmlFor="premiereVisiteOui">
-                Oui
-              </label>
-
-              <input
-                type="radio"
-                className="btn-check"
-                name="premiereVisite"
-                id="premiereVisiteNon"
-                value="non"
-                checked={formData.premiereVisite === 'non'}
-                onChange={handleChange}
-              />
-              <label className="btn btn-outline-primary" htmlFor="premiereVisiteNon">
-                Non
-              </label>
-            </div>
-          </div>
-
-          {/* SECTION 6: Motif de consultation */}
-          <div className="mb-4">
-            <label className="form-label fw-bold">Motif de consultation</label>
-            <textarea
-              className="form-control"
-              name="defaut"
-              value={formData.defaut}
-              onChange={handleChange}
-              rows="2"
-              placeholder="Décrivez brièvement le motif de votre consultation..."
-            />
-          </div>
-
-          {/* SECTION 7: Boutons d'action */}
-          <div className="form-actions d-flex justify-content-between mt-5 pt-4 border-top">
+          {/* SECTION 5: Boutons */}
+          <div className="form-actions">
             <button 
               type="button" 
-              className="btn btn-outline-secondary btn-lg px-4"
+              className="cancel-btn"
               onClick={handleReset}
               disabled={isSubmitting}
             >
@@ -760,32 +860,21 @@ const Rendezvous = () => {
             </button>
             <button 
               type="submit" 
-              className="btn btn-primary btn-lg px-4"
+              className="submit-btn"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>
-                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  <span className="submit-spinner"></span>
                   En cours...
                 </>
               ) : (
                 <>
                   <i className="bi bi-calendar-check me-2"></i>
-                  Confirmer le rendez-vous ({calculateTotal()} €)
+                  Confirmer ({calculateTotal()} TND)
                 </>
               )}
             </button>
-          </div>
-          
-          <div className="mt-3 text-muted small">
-            <p className="mb-0">
-              <i className="bi bi-info-circle me-1"></i>
-              Les champs marqués d'un * sont obligatoires
-            </p>
-            <p className="mb-0">
-              <i className="bi bi-shield-check me-1"></i>
-              Vos données sont traitées de manière confidentielle
-            </p>
           </div>
         </form>
       </div>

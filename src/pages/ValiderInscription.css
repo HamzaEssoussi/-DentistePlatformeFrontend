@@ -1,73 +1,482 @@
+/* ===== VARIABLES ===== */
+:root {
+  --bg-dark: #0b1c33;
+  --bg-dark-2: #20304d;
+  --bg-dark-3: #1a2840;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-light: rgba(255, 255, 255, 0.12);
+  --glass-dark: rgba(0, 0, 0, 0.2);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-glass-light: rgba(255, 255, 255, 0.25);
+  --white: #ffffff;
+  --blue-accent: #6aa9ff;
+  --blue-light: #8bc1ff;
+  --success-color: #4cd964;
+  --success-light: rgba(76, 217, 100, 0.1);
+  --success-dark: rgba(76, 217, 100, 0.2);
+  --gray-light: #a0aec0;
+  --gray-dark: #4a5568;
+  --border-radius: 16px;
+  --border-radius-lg: 24px;
+  --border-radius-xl: 32px;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --shadow-light: 0 4px 20px rgba(106, 169, 255, 0.2);
+  --shadow-success: 0 4px 20px rgba(76, 217, 100, 0.3);
+}
+
+/* ===== PAGE DE VALIDATION ===== */
 .validation-page {
-  min-height: 70vh;
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-dark-2) 100%);
+  padding: 120px 20px 60px;
+  position: relative;
+  overflow: hidden;
 }
 
-.validation-card {
-  background: white;
-  border-radius: 20px;
-  padding: 3rem;
-  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  max-width: 800px;
+.validation-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    var(--blue-accent) 50%, 
+    transparent 100%);
+}
+
+.container {
+  max-width: 900px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
+/* ===== CARTE DE VALIDATION ===== */
+.validation-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--border-radius-xl);
+  padding: 4rem 3rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  animation: cardAppear 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.validation-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, 
+    var(--blue-accent), 
+    var(--success-color), 
+    var(--blue-accent));
+  background-size: 200% 100%;
+  animation: shimmer 3s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ===== ICÔNE DE SUCCÈS ===== */
 .validation-icon {
-  font-size: 5rem;
-  color: #28a745;
-  margin-bottom: 1.5rem;
-  animation: bounce 1s ease infinite;
+  font-size: 6rem;
+  margin-bottom: 2rem;
+  position: relative;
+  display: inline-block;
+  color: var(--success-color);
+  animation: successPulse 2s ease infinite;
+}
+
+.validation-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  background: var(--success-light);
+  border-radius: 50%;
+  z-index: -1;
+  animation: ripple 2s ease-out infinite;
+}
+
+@keyframes successPulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 20px rgba(76, 217, 100, 0.4));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 30px rgba(76, 217, 100, 0.6));
+  }
+}
+
+@keyframes ripple {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 1;
+  }
+  100% {
+    width: 200px;
+    height: 200px;
+    opacity: 0;
+  }
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-15px); 
+  }
+}
+
+/* ===== CONTENU ===== */
+.validation-content {
+  position: relative;
+  z-index: 2;
+}
+
+.validation-title {
+  font-size: 2.8rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--white) 0%, var(--success-color) 50%, var(--blue-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
 }
 
 .validation-message {
-  font-size: 1.2rem;
-  color: #555;
-  margin-bottom: 2rem;
-  line-height: 1.6;
+  font-size: 1.3rem;
+  color: var(--gray-light);
+  margin-bottom: 3rem;
+  line-height: 1.7;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 400;
 }
 
+/* ===== ACTIONS ===== */
 .validation-actions {
   display: flex;
   justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  flex-wrap: wrap;
 }
 
+.primary-action-btn,
+.secondary-action-btn {
+  padding: 1.2rem 2.5rem;
+  border-radius: var(--border-radius-lg);
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  min-width: 280px;
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+}
+
+.primary-action-btn {
+  background: linear-gradient(135deg, var(--blue-accent), var(--blue-light));
+  color: white;
+  box-shadow: var(--shadow-light);
+}
+
+.primary-action-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 40px rgba(106, 169, 255, 0.4);
+}
+
+.primary-action-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.3), 
+    transparent);
+  transition: left 0.7s ease;
+}
+
+.primary-action-btn:hover::before {
+  left: 100%;
+}
+
+.secondary-action-btn {
+  background: linear-gradient(135deg, var(--glass-light), var(--glass));
+  border: 1px solid var(--border-glass);
+  color: var(--blue-light);
+}
+
+.secondary-action-btn:hover {
+  background: linear-gradient(135deg, 
+    rgba(106, 169, 255, 0.1), 
+    rgba(106, 169, 255, 0.05));
+  border-color: var(--border-glass-light);
+  transform: translateY(-4px);
+  color: var(--white);
+}
+
+/* ===== INFORMATIONS SUPPLÉMENTAIRES ===== */
+.additional-info {
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+.steps-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.steps-title::before,
+.steps-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    var(--blue-accent), 
+    transparent);
+}
+
+/* ===== LISTE DES ÉTAPES ===== */
 .steps-list {
   list-style: none;
   padding: 0;
-  text-align: left;
-  max-width: 500px;
-  margin: 2rem auto 0;
+  max-width: 600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+@media (max-width: 768px) {
+  .steps-list {
+    grid-template-columns: 1fr;
+  }
 }
 
 .steps-list li {
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.5rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #1a6bb3;
+  padding: 1.5rem 1.5rem;
+  background: linear-gradient(135deg, 
+    rgba(247, 250, 255, 0.05), 
+    rgb(232, 234, 238));
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.6s ease forwards;
+  opacity: 0;
+  transform: translateX(-20px);
 }
 
-/* Responsive */
+.steps-list li:nth-child(1) { animation-delay: 0.1s; }
+.steps-list li:nth-child(2) { animation-delay: 0.2s; }
+.steps-list li:nth-child(3) { animation-delay: 0.3s; }
+.steps-list li:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes slideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.steps-list li:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-glass-light);
+  box-shadow: var(--shadow-light);
+}
+
+.steps-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--blue-accent), var(--success-color));
+  border-radius: 4px 0 0 4px;
+}
+
+.steps-list li i {
+  font-size: 1.5rem;
+  color: var(--white);
+  margin-right: 15px;
+  flex-shrink: 0;
+}
+
+.steps-list li span {
+  color: var(--white);
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: left;
+}
+
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
+  .validation-page {
+    padding: 100px 15px 40px;
+  }
+  
   .validation-card {
-    padding: 2rem 1.5rem;
+    padding: 3rem 2rem;
+  }
+  
+  .validation-title {
+    font-size: 2.2rem;
+  }
+  
+  .validation-message {
+    font-size: 1.1rem;
+    padding: 0 1rem;
   }
   
   .validation-actions {
     flex-direction: column;
+    align-items: center;
   }
   
-  .validation-actions .btn {
-    width: 100%;
+  .primary-action-btn,
+  .secondary-action-btn {
+    min-width: 100%;
+    padding: 1rem 2rem;
+  }
+  
+  .steps-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .validation-card {
+    padding: 2.5rem 1.5rem;
+  }
+  
+  .validation-title {
+    font-size: 1.8rem;
+  }
+  
+  .validation-icon {
+    font-size: 4.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .validation-message {
+    font-size: 1rem;
+    margin-bottom: 2.5rem;
+  }
+  
+  .primary-action-btn,
+  .secondary-action-btn {
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
+  }
+  
+  .steps-list li {
+    padding: 1.2rem 1rem;
+  }
+  
+  .steps-list li i {
+    font-size: 1.3rem;
+    margin-right: 12px;
+  }
+  
+  .steps-list li span {
+    font-size: 0.95rem;
+  }
+}
+
+/* ===== ANIMATIONS GLOBALES ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.validation-page {
+  animation: fadeIn 0.8s ease;
+}
+
+/* ===== EFFETS DE PARTICULES ===== */
+.validation-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -50%;
+  bottom: -50%;
+  left: -50%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(106, 169, 255, 0.05) 0%,
+    transparent 50%
+  );
+  z-index: 0;
+  animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }

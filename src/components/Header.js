@@ -5,40 +5,29 @@ import './Header.css';
 const Header = () => {
   return (
     <header className="header">
-      <div className="container">
-        {/* Logo et titre */}
-        <div className="header-top">
-          <div className="logo">
-            <img src="/logo.png" alt="Logo Dentiste" className="logo-img" />
-          </div>
-          <div className="title">
-            <h1>Un sourire en un clic : simplifiez vos rendez-vous dentaires !</h1>
-          </div>
+      <div className="header-container">
+
+        {/* Logo + slogan */}
+        <div className="header-left">
+          <Link to="/" className="logo-text">
+            SmileEveryDay
+          </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="navbar">
-          <ul className="nav-list">
-            <li className="nav-item">
-              <Link to="/connexion" className="nav-link">Connexion</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/patient" className="nav-link">Patient</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/aide-soignant" className="nav-link">Aide-soignant</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/service" className="nav-link">Service</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/publication" className="nav-link">Publication</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/rendezvous" className="nav-link">Rendez-vous</Link>
-            </li>
-          </ul>
+        <nav className="header-nav">
+          <Link to="/connexion" className="nav-link">Connexion</Link>
+          <Link to="/patient" className="nav-link">Patient</Link>
+          <Link to="/aide-soignant" className="nav-link">Aide-soignant</Link>
+          <Link to="/service" className="nav-link">Services</Link>
+          <Link to="/publication" className="nav-link">Publications</Link>
+
+          {/* CTA */}
+          <Link to="/rendezvous" className="nav-link nav-cta">
+            Rendez-vous
+          </Link>
         </nav>
+
       </div>
     </header>
   );

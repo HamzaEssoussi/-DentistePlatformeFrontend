@@ -1,6 +1,24 @@
 import api from './api';
 
 const patientService = {
+  loginPatient: async (email, password) => {
+    try {
+      // Méthode 1: Chercher parmi tous les patients
+      const response = await api.get('/patients');
+      const patients = response.data;
+      
+      // Trouver le patient avec l'email et mot de passe correspondants
+      const patient = patients.find(p => 
+        p.emailP === email && p.mdpP === password
+      );
+      
+      return patient || null;
+      
+    } catch (error) {
+      console.error('Erreur authentification patient:', error);
+      throw error;
+    }
+  },
   // Créer un patient
   createPatient: async (patientData) => {
     try {
