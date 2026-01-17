@@ -9,12 +9,10 @@ const AideSoignantDashboard = () => {
   const navigate = useNavigate();
   const [dentiste, setDentiste] = useState(null);
   const [rendezvous, setRendezvous] = useState([]);
-  const [patientsMap, setPatientsMap] = useState({}); // Cache pour les patients
   const [loading, setLoading] = useState(true);
-  const [loadingPatients, setLoadingPatients] = useState({});
   const [filter, setFilter] = useState('today');
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [stats, setStats] = useState({
     total: 0,
     today: 0,
@@ -32,11 +30,13 @@ const AideSoignantDashboard = () => {
           return;
         }
 
+        // Charger le dentiste
         const dentisteResponse = await fetch(`${API_BASE_URL}/dentistes/${storedUser.idD}`);
         const dentisteData = await dentisteResponse.json();
         setDentiste(dentisteData);
 
-        await loadRendezvous(dentisteData.idD);
+        // Charger les rendez-vous AVEC les informations patients
+        await loadRendezvousWithPatients(dentisteData.idD);
         
         setLoading(false);
       } catch (error) {
@@ -48,43 +48,109 @@ const AideSoignantDashboard = () => {
     loadDentisteData();
   }, [navigate]);
 
-  const loadRendezvous = async (dentisteId) => {
+  // FONCTION AMÉLIORÉE : Charger les rendez-vous et les patients en même temps
+  const loadRendezvousWithPatients = async (dentisteId) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/rendezvous/dentiste/${dentisteId}`);
-      const data = await response.json();
+      console.log("Chargement des rendez-vous pour dentiste:", dentisteId);
       
+      // 1. Charger tous les rendez-vous
+      const rdvResponse = await fetch(`${API_BASE_URL}/rendezvous/dentiste/${dentisteId}`);
+      const rdvData = await rdvResponse.json();
+      console.log("Rendez-vous bruts:", rdvData);
+
+      if (!rdvData || rdvData.length === 0) {
+        setRendezvous([]);
+        setStats({ total: 0, today: 0, upcoming: 0, completed: 0 });
+        return;
+      }
+
+      // 2. Récupérer tous les IDs de patients uniques
+      const patientIds = [...new Set(rdvData.map(rdv => rdv.idP).filter(id => id))];
+      console.log("IDs patients uniques:", patientIds);
+
+      // 3. Charger TOUS les patients en une seule requête
+      const patientsMap = {};
+      if (patientIds.length > 0) {
+        try {
+          // Essayer de charger tous les patients d'un coup
+          const allPatientsResponse = await fetch(`${API_BASE_URL}/patients`);
+          if (allPatientsResponse.ok) {
+            const allPatients = await allPatientsResponse.json();
+            allPatients.forEach(patient => {
+              patientsMap[patient.idP] = patient;
+            });
+            console.log("Tous les patients chargés:", Object.keys(patientsMap).length);
+          }
+        } catch (error) {
+          console.error("Erreur chargement batch patients:", error);
+        }
+        
+        // Si certains patients manquent, les charger individuellement
+        const missingPatientIds = patientIds.filter(id => !patientsMap[id]);
+        if (missingPatientIds.length > 0) {
+          console.log("Chargement individuel des patients manquants:", missingPatientIds);
+          const patientPromises = missingPatientIds.map(async (patientId) => {
+            try {
+              const response = await fetch(`${API_BASE_URL}/patients/${patientId}`);
+              if (response.ok) {
+                const patientData = await response.json();
+                return { id: patientId, data: patientData };
+              }
+            } catch (error) {
+              console.error(`Erreur patient ${patientId}:`, error);
+            }
+            return null;
+          });
+
+          const patientResults = await Promise.all(patientPromises);
+          patientResults.forEach(result => {
+            if (result && result.data) {
+              patientsMap[result.id] = result.data;
+            }
+          });
+        }
+      }
+
+      // 4. Formatter les rendez-vous avec les informations des patients
       const today = new Date().toISOString().split('T')[0];
       const now = new Date();
       
-      const formattedRdv = data.map(rdv => {
+      const formattedRdv = rdvData.map(rdv => {
         const rdvDate = new Date(rdv.dateRv);
         const isToday = rdv.dateRv === today;
         const isUpcoming = rdvDate > now && rdv.statutRv !== 'Terminé' && rdv.statutRv !== 'Annulé';
         const isCompleted = rdv.statutRv === 'Terminé';
         
+        // Récupérer le patient depuis la map
+        const patientInfo = rdv.idP ? patientsMap[rdv.idP] : null;
+        
         return {
           id: rdv.idRv,
           date: rdv.dateRv,
           heure: rdv.heureRv,
-          patientId: rdv.patient?.idP || rdv.idP, // ID du patient
-          patient: rdv.patient || null, // Peut être null ou un objet partiel
+          patientId: rdv.idP,
+          patient: patientInfo, // Informations du patient
           details: rdv.detailsRv,
           statut: rdv.statutRv || 'Planifié',
           services: rdv.services || [],
+          dentiste: rdv.dentiste,
           isToday,
           isUpcoming,
           isCompleted
         };
       });
 
+      // Trier par date
       formattedRdv.sort((a, b) => {
         const dateA = new Date(`${a.date}T${a.heure}`);
         const dateB = new Date(`${b.date}T${b.heure}`);
         return dateA - dateB;
       });
 
+      console.log("Rendez-vous formatés avec patients:", formattedRdv);
       setRendezvous(formattedRdv);
       
+      // Calculer les statistiques
       const todayRdv = formattedRdv.filter(rdv => rdv.isToday && !rdv.isCompleted);
       const upcomingRdv = formattedRdv.filter(rdv => rdv.isUpcoming && !rdv.isToday);
       const completedRdv = formattedRdv.filter(rdv => rdv.isCompleted);
@@ -95,9 +161,6 @@ const AideSoignantDashboard = () => {
         upcoming: upcomingRdv.length,
         completed: completedRdv.length
       });
-
-      // Charger les informations des patients
-      await loadPatientsInfo(formattedRdv);
       
     } catch (error) {
       console.error('Erreur chargement rendez-vous:', error);
@@ -105,255 +168,101 @@ const AideSoignantDashboard = () => {
     }
   };
 
-  const loadPatientsInfo = async (appointments) => {
-    try {
-      const patientIds = [...new Set(appointments
-        .map(rdv => rdv.patientId)
-        .filter(id => id && !patientsMap[id]))];
-
-      if (patientIds.length === 0) return;
-
-      // Marquer ces patients comme en cours de chargement
-      const newLoadingPatients = {};
-      patientIds.forEach(id => {
-        newLoadingPatients[id] = true;
-      });
-      setLoadingPatients(prev => ({ ...prev, ...newLoadingPatients }));
-
-      // Charger les informations des patients en parallèle
-      const patientPromises = patientIds.map(async (patientId) => {
-        try {
-          const response = await fetch(`${API_BASE_URL}/patients/${patientId}`);
-          if (response.ok) {
-            const patientData = await response.json();
-            return { id: patientId, data: patientData };
-          }
-          return null;
-        } catch (error) {
-          console.error(`Erreur chargement patient ${patientId}:`, error);
-          return null;
-        }
-      });
-
-      const patientsResults = await Promise.all(patientPromises);
-      
-      // Mettre à jour le cache des patients
-      const updatedPatientsMap = { ...patientsMap };
-      patientsResults.forEach(result => {
-        if (result && result.data) {
-          updatedPatientsMap[result.id] = result.data;
-        }
-      });
-      setPatientsMap(updatedPatientsMap);
-
-      // Retirer du chargement
-      const updatedLoading = { ...loadingPatients };
-      patientIds.forEach(id => {
-        delete updatedLoading[id];
-      });
-      setLoadingPatients(updatedLoading);
-
-    } catch (error) {
-      console.error('Erreur chargement patients:', error);
-    }
-  };
-
-  const getPatientInfo = (patientId) => {
-    if (!patientId) return null;
-    
-    // Si le patient est déjà dans le cache
-    if (patientsMap[patientId]) {
-      return patientsMap[patientId];
-    }
-    
-    // Si le patient n'est pas encore chargé, démarrer le chargement
-    if (!loadingPatients[patientId]) {
-      setLoadingPatients(prev => ({ ...prev, [patientId]: true }));
-      loadPatientInfo(patientId);
-    }
-    
-    return null;
-  };
-
-  const loadPatientInfo = async (patientId) => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/patients/${patientId}`);
-      if (response.ok) {
-        const patientData = await response.json();
-        setPatientsMap(prev => ({ ...prev, [patientId]: patientData }));
-      }
-    } catch (error) {
-      console.error(`Erreur chargement patient ${patientId}:`, error);
-    } finally {
-      setLoadingPatients(prev => {
-        const updated = { ...prev };
-        delete updated[patientId];
-        return updated;
-      });
-    }
-  };
-
-  const getPhotoUrl = (photoPath, type = 'patient') => {
-    if (!photoPath || photoPath.trim() === '') {
-      return null;
-    }
-    
-    let url = photoPath.trim();
-    url = url.replace(/\\/g, '/').replace(/\/\//g, '/');
-    
-    if (type === 'patient') {
-      if (url.startsWith('/uploads/patients/')) {
-        const filename = url.split('/').pop();
-        return `${FILE_BASE_URL}/uploads/patients/${filename}`;
-      }
-      else if (!url.includes('/')) {
-        return `${FILE_BASE_URL}/uploads/patients/${url}`;
-      }
-    } else {
-      if (url.startsWith('/uploads/patients/')) {
-        const filename = url.split('/').pop();
-        return `${FILE_BASE_URL}/uploads/patients/${filename}`;
-      }
-      else if (!url.includes('/')) {
-        return `${FILE_BASE_URL}/uploads/patients/${url}`;
-      }
-    }
-    
-    return url;
-  };
-
-  const getInitials = (prenom = '', nom = '') => {
-    const firstInitial = prenom ? prenom.charAt(0).toUpperCase() : '';
-    const lastInitial = nom ? nom.charAt(0).toUpperCase() : '';
-    return `${firstInitial}${lastInitial}` || '??';
-  };
-
-  const PhotoDisplay = ({ patientId, prenom, nom, type = 'patient', size = 'md' }) => {
-    const [imgError, setImgError] = useState(false);
-    const [photoUrl, setPhotoUrl] = useState(null);
-    const [patientInfo, setPatientInfo] = useState(null);
-    
-    useEffect(() => {
-      // Si patientId est fourni, chercher les informations
-      if (patientId) {
-        const info = getPatientInfo(patientId);
-        if (info) {
-          setPatientInfo(info);
-          if (info.photoP) {
-            const url = getPhotoUrl(info.photoP, type);
-            setPhotoUrl(url);
-          }
-        }
-      } else if (prenom || nom) {
-        // Si les infos sont directement fournies
-        if (type === 'dentiste' && dentiste?.photoD) {
-          const url = getPhotoUrl(dentiste.photoD, type);
-          setPhotoUrl(url);
-        }
-      }
-    }, [patientId, prenom, nom, type]);
-    
-    const sizes = {
-      sm: { width: '40px', height: '40px', fontSize: '14px' },
-      md: { width: '60px', height: '60px', fontSize: '18px' },
-      lg: { width: '80px', height: '80px', fontSize: '24px' },
-      xl: { width: '100px', height: '100px', fontSize: '32px' }
-    };
-    
-    const avatarColors = [
-      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
-    ];
-    
-    const displayPrenom = patientInfo?.prenomP || prenom || '';
-    const displayNom = patientInfo?.nomP || nom || '';
-    
-    if (!photoUrl || imgError) {
-      const avatarStyle = {
-        width: sizes[size].width,
-        height: sizes[size].height,
-        borderRadius: '50%',
-        background: avatarColors[(displayPrenom?.length || displayNom?.length || 0) % avatarColors.length],
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'white',
-        fontWeight: 'bold',
-        fontSize: sizes[size].fontSize,
-        border: '2px solid rgba(255,255,255,0.3)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-      };
-      
-      return (
-        <div 
-          className="avatar-initials"
-          style={avatarStyle}
-          title={`${displayPrenom} ${displayNom}`}
-        >
-          {getInitials(displayPrenom, displayNom)}
-        </div>
-      );
-    }
-    
-    return (
-      <div 
-        className="photo-container"
-        style={{
-          width: sizes[size].width,
-          height: sizes[size].height,
-          borderRadius: '50%',
-          overflow: 'hidden',
-          border: '2px solid rgba(255,255,255,0.3)',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-        }}
-      >
-        <img 
-          src={photoUrl} 
-          alt={`${displayPrenom} ${displayNom}`}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-          onError={() => setImgError(true)}
-        />
-      </div>
-    );
-  };
-
   const updateAppointmentStatus = async (appointmentId, newStatus) => {
     setIsUpdating(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/rendezvous/${appointmentId}/statut`, {
-        method: 'PUT',
+      const endpoint = newStatus === 'Annulé' 
+        ? `${API_BASE_URL}/rendezvous/${appointmentId}/annuler`
+        : newStatus === 'Terminé'
+          ? `${API_BASE_URL}/rendezvous/${appointmentId}/terminer`
+          : newStatus === 'Confirmé'
+            ? `${API_BASE_URL}/rendezvous/${appointmentId}/confirmer`
+            : `${API_BASE_URL}/rendezvous/${appointmentId}/statut`;
+
+      const method = newStatus === 'Annulé' || newStatus === 'Terminé' || newStatus === 'Confirmé'
+        ? 'POST'
+        : 'PUT';
+
+      const body = newStatus === 'Annulé' || newStatus === 'Terminé' || newStatus === 'Confirmé'
+        ? null
+        : JSON.stringify({ statutRv: newStatus });
+
+      const response = await fetch(endpoint, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ statutRv: newStatus })
+        ...(body && { body })
       });
 
       if (response.ok) {
-        await loadRendezvous(dentiste.idD);
-        setSelectedAppointment(null);
+        await loadRendezvousWithPatients(dentiste.idD);
       } else {
         console.error('Erreur mise à jour statut');
+        alert('Erreur lors de la mise à jour du statut');
       }
     } catch (error) {
       console.error('Erreur:', error);
+      alert('Erreur réseau');
     } finally {
       setIsUpdating(false);
     }
   };
 
+  const handleCancelAppointment = async (appointmentId) => {
+    const appointmentToDelete = rendezvous.find(rdv => rdv.id === appointmentId);
+    
+    if (!appointmentToDelete) return;
+    
+    const patientInfo = appointmentToDelete.patient;
+    const patientName = patientInfo 
+      ? `${patientInfo.prenomP} ${patientInfo.nomP}`
+      : `Patient #${appointmentToDelete.patientId}`;
+    
+    const confirmationMessage = `Êtes-vous sûr de vouloir supprimer ce rendez-vous ?
+    
+Patient : ${patientName}
+Date : ${formatSimpleDate(appointmentToDelete.date)}
+Heure : ${formatTime(appointmentToDelete.heure)}
+Dentiste : Dr. ${dentiste?.prenomD} ${dentiste?.nomD}
+
+Cette action supprimera définitivement le rendez-vous.`;
+    
+    if (!window.confirm(confirmationMessage)) {
+      return;
+    }
+    
+    setDeletingId(appointmentId);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/rendezvous/${appointmentId}/annuler`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        await loadRendezvousWithPatients(dentiste.idD);
+        alert(`Rendez-vous du ${formatSimpleDate(appointmentToDelete.date)} a été supprimé avec succès.`);
+      } else {
+        alert("Erreur lors de la suppression du rendez-vous");
+      }
+    } catch (error) {
+      console.error("Erreur suppression:", error);
+      alert("Erreur lors de la suppression du rendez-vous");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleStatusChange = async (appointmentId, newStatus) => {
+    if (newStatus === 'Annulé') {
+      await handleCancelAppointment(appointmentId);
+      return;
+    }
+
     const confirmationMessages = {
       'Confirmé': 'Confirmer ce rendez-vous ?',
       'En cours': 'Marquer ce rendez-vous comme "En cours" ?',
-      'Terminé': 'Marquer ce rendez-vous comme "Terminé" ?',
-      'Annulé': 'Annuler ce rendez-vous ?'
+      'Terminé': 'Marquer ce rendez-vous comme "Terminé" ?'
     };
 
     if (window.confirm(confirmationMessages[newStatus] || 'Modifier le statut ?')) {
@@ -407,26 +316,164 @@ const AideSoignantDashboard = () => {
     return `${hours}:${minutes}`;
   };
 
+  const formatSimpleDate = (dateString) => {
+    if (!dateString) return '';
+    
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return dateString;
+    }
+  };
+
+  const getPhotoUrl = (photoPath, type = 'patient') => {
+    if (!photoPath || photoPath.trim() === '') {
+      return null;
+    }
+
+    let url = photoPath.trim();
+    url = url.replace(/\\/g, '/').replace(/\/\//g, '/');
+
+    if (type === 'patient') {
+      if (url.startsWith('/uploads/patients/')) {
+        const filename = url.split('/').pop();
+        return `${FILE_BASE_URL}/uploads/patients/${filename}`;
+      }
+      else if (!url.includes('/')) {
+        return `${FILE_BASE_URL}/uploads/patients/${url}`;
+      }
+    } else {
+      if (url.startsWith('/uploads/patients/')) {
+        const filename = url.split('/').pop();
+        return `${FILE_BASE_URL}/uploads/patients/${filename}`;
+      }
+      else if (!url.includes('/')) {
+        return `${FILE_BASE_URL}/uploads/patients/${url}`;
+      }
+    }
+
+    return url;
+  };
+
+  const getInitials = (prenom = '', nom = '') => {
+    const firstInitial = prenom ? prenom.charAt(0).toUpperCase() : '';
+    const lastInitial = nom ? nom.charAt(0).toUpperCase() : '';
+    return `${firstInitial}${lastInitial}` || '??';
+  };
+
+  const PhotoDisplay = ({ patient, type = 'patient', size = 'md' }) => {
+    const [imgError, setImgError] = useState(false);
+    const [photoUrl, setPhotoUrl] = useState(null);
+
+    useEffect(() => {
+      let photoPath = null;
+      
+      if (type === 'patient' && patient?.photoP) {
+        photoPath = patient.photoP;
+      } else if (type === 'dentiste' && dentiste?.photoD) {
+        photoPath = dentiste.photoD;
+      }
+
+      if (photoPath) {
+        const url = getPhotoUrl(photoPath, type);
+        setPhotoUrl(url);
+      } else {
+        setPhotoUrl(null);
+      }
+    }, [patient, type, dentiste]);
+
+    const sizes = {
+      sm: { width: '40px', height: '40px', fontSize: '14px' },
+      md: { width: '60px', height: '60px', fontSize: '18px' },
+      lg: { width: '80px', height: '80px', fontSize: '24px' },
+      xl: { width: '100px', height: '100px', fontSize: '32px' }
+    };
+
+    const avatarColors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+    ];
+
+    const displayPrenom = patient?.prenomP || dentiste?.prenomD || '';
+    const displayNom = patient?.nomP || dentiste?.nomD || '';
+
+    if (!photoUrl || imgError) {
+      const avatarStyle = {
+        width: sizes[size].width,
+        height: sizes[size].height,
+        borderRadius: '50%',
+        background: avatarColors[(displayPrenom?.length || displayNom?.length || 0) % avatarColors.length],
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: sizes[size].fontSize,
+        border: '2px solid rgba(255,255,255,0.3)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+      };
+
+      return (
+        <div 
+          className="avatar-initials"
+          style={avatarStyle}
+          title={`${displayPrenom} ${displayNom}`}
+        >
+          {getInitials(displayPrenom, displayNom)}
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        className="photo-container"
+        style={{
+          width: sizes[size].width,
+          height: sizes[size].height,
+          borderRadius: '50%',
+          overflow: 'hidden',
+          border: '2px solid rgba(255,255,255,0.3)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }}
+      >
+        <img 
+          src={photoUrl} 
+          alt={`${displayPrenom} ${displayNom}`}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+          onError={() => setImgError(true)}
+        />
+      </div>
+    );
+  };
+
   const AppointmentCard = ({ appointment }) => {
-    const patientInfo = getPatientInfo(appointment.patientId);
-    const isLoadingPatient = loadingPatients[appointment.patientId];
+    const patientInfo = appointment.patient;
     
     return (
       <div className="appointment-card">
+      
+    
         <div className="appointment-header">
           <div className="patient-info">
             <PhotoDisplay 
-              patientId={appointment.patientId}
+              patient={patientInfo}
               type="patient"
               size="md"
             />
             <div className="patient-details">
-              {isLoadingPatient ? (
-                <div className="loading-patient">
-                  <div className="loading-spinner-small"></div>
-                  <span>Chargement des informations...</span>
-                </div>
-              ) : patientInfo ? (
+              {patientInfo ? (
                 <>
                   <h6 className="patient-name">
                     {patientInfo.prenomP} {patientInfo.nomP}
@@ -436,7 +483,10 @@ const AideSoignantDashboard = () => {
                       <i className="bi bi-envelope me-1"></i>
                       {patientInfo.emailP || 'Email non spécifié'}
                     </span>
-                    
+                    <span className="patient-phone">
+                      <i className="bi bi-telephone me-1"></i>
+                      {patientInfo.telP || 'Téléphone non spécifié'}
+                    </span>
                   </div>
                 </>
               ) : (
@@ -447,7 +497,7 @@ const AideSoignantDashboard = () => {
                   <div className="patient-meta">
                     <span className="patient-email">
                       <i className="bi bi-question-circle me-1"></i>
-                      Informations en cours de chargement
+                      Informations du patient non disponibles
                     </span>
                   </div>
                 </>
@@ -455,6 +505,10 @@ const AideSoignantDashboard = () => {
             </div>
           </div>
           <div className="appointment-meta">
+            <div className="appointment-time">
+              <i className="bi bi-calendar me-1"></i>
+              {formatSimpleDate(appointment.date)}
+            </div>
             <div className="appointment-time">
               <i className="bi bi-clock me-1"></i>
               {formatTime(appointment.heure)}
@@ -490,7 +544,6 @@ const AideSoignantDashboard = () => {
                 {appointment.statut === 'Planifié' && (
                   <button 
                     className="btn-action confirm"
-                    
                     onClick={() => handleStatusChange(appointment.id, 'Confirmé')}
                     disabled={isUpdating}
                   >
@@ -521,23 +574,30 @@ const AideSoignantDashboard = () => {
                   </button>
                 )}
                 
-                {appointment.statut !== 'Annulé' && (
-                  <button 
-                    className="btn-action cancel"
-                    onClick={() => handleStatusChange(appointment.id, 'Annulé')}
-                    disabled={isUpdating}
-                  >
-                    <i className="bi bi-x-circle me-1"></i>
-                    Annuler
-                  </button>
-                )}
+                <button 
+                  className="btn-action cancel"
+                  onClick={() => handleStatusChange(appointment.id, 'Annulé')}
+                  disabled={deletingId === appointment.id}
+                >
+                  {deletingId === appointment.id ? (
+                    <>
+                      <span className="spinner spinner-sm me-1"></span>
+                      Suppression...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-x-circle me-1"></i>
+                      Annuler
+                    </>
+                  )}
+                </button>
               </>
             )}
             
             {(appointment.statut === 'Terminé' || appointment.statut === 'Annulé') && (
               <button 
                 className="btn-action details"
-                onClick={() => setSelectedAppointment(appointment)}
+                onClick={() => console.log("Voir détails:", appointment)}
               >
                 <i className="bi bi-eye me-1"></i>
                 Détails
@@ -580,12 +640,10 @@ const AideSoignantDashboard = () => {
 
       {/* CONTENU PRINCIPAL */}
       <div className="planning-wrapper">
-        {/* SIDEBAR DENTISTE */}
+        {/* SIDEBAR DENTISTE AVEC LES DEUX NOUVEAUX BOUTONS */}
         <div className="dentiste-sidebar">
           <div className="dentiste-profile">
             <PhotoDisplay 
-              prenom={dentiste?.prenomD}
-              nom={dentiste?.nomD}
               type="dentiste"
               size="xl"
             />
@@ -609,20 +667,40 @@ const AideSoignantDashboard = () => {
             </div>
           </div>
 
+          {/* BOUTONS D'ACTION */}
           <div className="action-buttons">
             <button 
               className="btn-primary"
-              onClick={() => navigate('/dentiste/publication')}
+              onClick={() => navigate('/publication')}
             >
               <i className="bi bi-plus-circle me-2"></i>
               Nouvelle publication
             </button>
+            
+            {/* NOUVEAU BOUTON - AJOUTER UN SERVICE */}
             <button 
-              className="btn-secondary"
+              className="btn-primary"
+              onClick={() => navigate('/service')}
+            >
+              <i className="bi bi-plus-square me-2"></i>
+              Ajouter un service
+            </button>
+            
+            {/* NOUVEAU BOUTON - AJOUTER UN RENDEZ-VOUS */}
+            <button 
+              className="btn-primary"
               onClick={() => navigate('/rendezvous')}
             >
               <i className="bi bi-calendar-plus me-2"></i>
-              Ajouter RDV
+              Ajouter un RDV
+            </button>
+            
+            <button 
+              className="btn-secondary"
+              onClick={() => navigate('/patient')}
+            >
+              <i className="bi bi-people me-2"></i>
+              Voir mes patients
             </button>
           </div>
         </div>
@@ -657,6 +735,13 @@ const AideSoignantDashboard = () => {
               >
                 <i className="bi bi-check-circle me-1"></i>
                 Terminés
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'cancelled' ? 'active' : ''}`}
+                onClick={() => setFilter('cancelled')}
+              >
+                <i className="bi bi-x-circle me-1"></i>
+                Annulés
               </button>
               <button 
                 className={`filter-btn ${filter === 'all' ? 'active' : ''}`}

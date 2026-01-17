@@ -206,7 +206,13 @@ const AideSoignant = () => {
 
   return (
     <div className="aidesoignant-page-glass">
-      
+      {/* BACKGROUND */}
+      <div 
+        className="publication-bg"
+        style={{
+          backgroundImage: `url('istockphoto-1196021900-612x612.jpg')`
+        }} 
+      ></div>
       <div className="aidesoignant-container-glass">
         {/* Header Glass */}
         <div className="aidesoignant-header-glass">

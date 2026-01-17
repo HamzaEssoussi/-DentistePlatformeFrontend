@@ -69,4 +69,10 @@ body {
   --blue-accent: #6aa9ff;
   --purple-accent: #8b5cf6;
 }
+.main-content {
+  flex: 1;
+  padding-top: 120px; /* Pour compenser le header fixe */
+  padding-bottom: 40px;
+  min-height: calc(100vh - 160px);
+}
 }

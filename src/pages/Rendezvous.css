@@ -26,21 +26,21 @@
 /* ===== STYLES GÉNÉRAUX ===== */
 .rendezvous-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-dark-2) 100%);
   padding: 120px 20px 60px;
   color: var(--white);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
 }
 
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 20px; /* Gardez un peu de padding */
 }
 
 /* ===== HEADER DE LA PAGE ===== */
 .page-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 55px;
   position: relative;
 }
 
@@ -50,7 +50,7 @@
   bottom: -20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
+  width: 250px;
   height: 3px;
   background: linear-gradient(90deg, transparent, var(--blue-accent), transparent);
   border-radius: 3px;
@@ -126,12 +126,13 @@
   backdrop-filter: blur(20px);
   border: 1px solid var(--border-glass);
   border-radius: var(--border-radius-xl);
-  padding: 40px;
+  padding: 55px;
   box-shadow: var(--shadow);
+  max-width: 1500px;
 }
 
 .form-section {
-  margin-bottom: 40px;
+  margin-bottom: 15px;
 }
 
 .form-row {
@@ -150,17 +151,17 @@
 
 /* ===== LABELS ===== */
 .section-label {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 600;
   color: var(--white);
-  margin-bottom: 15px;
+  margin-bottom: 19px;
   display: flex;
   align-items: center;
 }
 
 .section-label i {
   color: var(--blue-accent);
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   margin-right: 10px;
 }
 
@@ -973,13 +974,13 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 490px) {
   .display-title {
     font-size: 1.8rem;
   }
   
   .rendezvous-form {
-    padding: 20px;
+    padding: 25px;
   }
   
   .time-slots-grid {
@@ -1094,4 +1095,17 @@
 
 .dentiste-photo-wrapper {
   flex-shrink: 0;
+}
+/* BACKGROUND IMAGE */
+.publication-bg {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -3;
+  filter: brightness(0.19);
 }

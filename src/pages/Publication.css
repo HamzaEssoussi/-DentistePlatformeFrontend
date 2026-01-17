@@ -1,14 +1,562 @@
-.publication-page {
-  padding: 2rem 0;
+/* =========================
+   VARIABLES
+========================= */
+:root {
+  --bg-dark: #0b1c33;
+  --bg-dark-2: #0a1528;
+  --bg-darker: #070f1c;
+  --glass: rgba(255, 255, 255, 0.08);
+  --glass-light: rgba(255, 255, 255, 0.12);
+  --glass-medium: rgba(255, 255, 255, 0.15);
+  --border-glass: rgba(255, 255, 255, 0.15);
+  --border-light: rgba(255, 255, 255, 0.25);
+  --white: #ffffff;
+  --text-light: rgba(255, 255, 255, 0.9);
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --blue-accent: #6aa9ff;
+  --purple-accent: #9d6bff;
+  --blue-gradient: linear-gradient(135deg, #6aa9ff, #4d8dff);
+  --purple-gradient: linear-gradient(135deg, #9d6bff, #7b4dff);
+  --danger: #e74c3c;
 }
 
-.publication-form .form-text {
-  color: #6c757d;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+/* =========================
+   BASE - PUBLICATION PAGE
+========================= */
+.publication-page-glass {
+  min-height: 100vh;
+
+  color: var(--text-light);
+  padding: 100px 20px 50px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  overflow: hidden;
 }
 
-.publication-form textarea {
+/* BACKGROUND IMAGE */
+.publication-bg {
+  position: fixed;
+  top: 50px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -3;
+  filter: brightness(0.25);
+}
+
+/* OVERLAY */
+.publication-overlay {
+  position: relative;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(11, 28, 51, 0.009),
+    rgba(7, 15, 28, 0.95)
+  );
+  z-index: -2;
+}
+
+.publication-container-glass {
+  width: 100%;
+  max-width: 1400px;
+  z-index: 1;
+}
+
+/* =========================
+   HEADER
+========================= */
+.publication-header-glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2rem 3rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  border-left: 5px solid var( --white);
+}
+
+.header-content-glass {
+  text-align: center;
+}
+
+.header-title-glass {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, var(--white), var( --white));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-subtitle-glass {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* =========================
+   WRAPPER
+========================= */
+.publication-wrapper-glass {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+/* =========================
+   PUBLICATIONS EXISTANTES
+========================= */
+.publications-section-glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.section-header-glass {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-glass);
+}
+
+.section-title-glass {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+}
+
+/* GRID DES PUBLICATIONS */
+.publications-grid-glass {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+/* CARTE PUBLICATION */
+.publication-card-glass {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-glass);
+  border-radius: 15px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.publication-card-glass:hover {
+  border-color: var(--border-light);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.publication-card-header {
+  display: relative;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.publication-type-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var( --white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: 1.2rem;
+}
+
+.publication-type-badge {
+  background: var(--glass-light);
+  color: var(--text-muted);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border-glass);
+}
+
+.publication-card-body {
+  flex: 1;
+}
+
+.publication-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--white);
+  line-height: 1.4;
+}
+
+.publication-resume {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.publication-meta {
+  display: flex;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.publication-card-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+/* =========================
+   FORMULAIRE
+========================= */
+.form-section-glass {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-glass);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  position: relative;
+  top: 125x;
+}
+
+.publication-form-glass {
+  display: relative;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* FORM ROWS */
+.form-row-glass {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.form-group-glass {
+  margin-bottom: 0;
+}
+
+/* FORM ELEMENTS */
+.form-label-glass {
+  color: var(--text-light);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.95rem;
+}
+
+.form-label-glass.required:after {
+  content: "*";
+  color: var(--danger);
+  margin-left: 4px;
+}
+
+.form-input-glass,
+.form-select-glass {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: var(--glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--bg-darker);
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-input-glass:focus,
+.form-select-glass:focus {
+  outline: none;
+  border-color: var( --white);
+  box-shadow: 0 0 0 3px rgba(157, 107, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+textarea.form-input-glass {
   min-height: 120px;
   resize: vertical;
+}
+
+.form-hint-glass {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* FILE UPLOAD */
+.file-upload-glass {
+  position: relative;
+}
+
+.file-upload-label {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  background: var(--glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-upload-label:hover {
+  border-color: var( --white);
+  color: var(--text-light);
+}
+
+.file-upload-icon {
+  margin-right: 0.75rem;
+  font-size: 1.2rem;
+}
+
+.file-upload-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-input-hidden {
+  display: none;
+}
+
+.file-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--glass);
+  border: 1px solid var(--border-glass);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-clear-btn:hover {
+  background: var(--danger);
+  color: var(--white);
+  border-color: var(--danger);
+}
+
+/* IMAGE PREVIEW */
+.image-preview-glass {
+  margin-top: 1rem;
+}
+
+.preview-image {
+  width: 100%;
+  max-height: 200px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid var(--border-glass);
+}
+
+/* =========================
+   BOUTONS
+========================= */
+.form-actions-glass {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-glass);
+}
+
+.btn-glass-primary {
+  background: var( --glass);
+  color: var(--white);
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: relative;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  box-shadow: 0 4px 20px rgba(157, 107, 255, 0.3);
+}
+
+.btn-glass-primary:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(157, 107, 255, 0.4);
+}
+
+.btn-glass-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-glass-secondary {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border-light);
+  padding: 1rem 2rem;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.btn-glass-secondary:hover {
+  background: var(--glass-light);
+  border-color: var( --white);
+  color: var( --white);
+  transform: translateY(-2px);
+}
+
+.btn-glass-outline {
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border-glass);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: relative;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-glass-outline:hover {
+  border-color: var( --white);
+  color: var( --white);
+}
+
+/* =========================
+   ÉTATS VIDES
+========================= */
+.empty-state-glass {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 2rem;
+  background: var(--glass-light);
+  border-radius: 15px;
+  border: 2px dashed var(--border-glass);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.empty-state-glass h4 {
+  color: var(--text-light);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-glass p {
+  color: var(--text-muted);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 1200px) {
+  .publication-wrapper-glass {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-section-glass {
+    position: relative;
+  }
+}
+
+@media (max-width: 768px) {
+  .publication-page-glass {
+    padding: 80px 15px 30px;
+  }
+  
+  .publication-header-glass {
+    padding: 1.5rem 2rem;
+
+  }
+  
+  .header-title-glass {
+    font-size: 1.8rem;
+  }
+  
+  .publications-grid-glass {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions-glass {
+    flex-direction: column;
+  }
+  
+  .btn-glass-primary,
+  .btn-glass-secondary {
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .publication-header-glass {
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .header-title-glass {
+    font-size: 1.5rem;
+  }
+  
+  .publications-section-glass,
+  .form-section-glass {
+    padding: 1.5rem;
+  }
 }

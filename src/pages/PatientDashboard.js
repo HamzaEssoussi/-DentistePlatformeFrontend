@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import './Dashboard.css';
+import './Dashboard.css'; // Changé de Dashboard.css à Patient.css
 
 const API_BASE_URL = 'http://localhost:8080/dentiste/api';
 const FILE_BASE_URL = 'http://localhost:8080/dentiste/api/files';
@@ -82,16 +82,27 @@ const PatientDashboard = () => {
       
       console.log("Rendez-vous reçus:", appointmentsData);
       
-      const formattedAppointments = appointmentsData.map(rdv => ({
-        id: rdv.idRv || rdv.rendezvousId,
-        date: rdv.dateRv,
-        heure: rdv.heureRv,
-        dentiste: `Dr. ${rdv.dentiste?.prenomD || ''} ${rdv.dentiste?.nomD || 'Dentiste'}`,
-        type: rdv.services?.map(s => s.nomSM).join(', ') || 'Consultation',
-        status: getStatusText(rdv.statutRv),
-        details: rdv.detailsRv,
-        heureRV: rdv.heureRv,
-      })).sort((a, b) => new Date(b.date) - new Date(a.date));
+      const formattedAppointments = appointmentsData.map(rdv => {
+        // Récupérer les détails complets pour le nouveau design
+        const dentiste = rdv.dentiste || {};
+        const services = rdv.services || [];
+        
+        return {
+          id: rdv.idRv || rdv.rendezvousId,
+          date: rdv.dateRv,
+          heure: rdv.heureRv,
+          dentisteNom: `Dr. ${dentiste.prenomD || ''} ${dentiste.nomD || 'Dentiste'}`,
+          dentisteSpecialite: dentiste.specialiteD || 'Dentiste généraliste',
+          dentistePhoto: dentiste.photoD,
+          type: services.map(s => s.nomSM).join(', ') || 'Consultation',
+          status: getStatusText(rdv.statutRv),
+          details: rdv.detailsRv,
+          heureRV: rdv.heureRv,
+          servicesList: services,
+          dentisteEmail: dentiste.emailD,
+          dentisteTelephone: dentiste.telephoneD
+        };
+      }).sort((a, b) => new Date(b.date) - new Date(a.date));
       
       setAppointments(formattedAppointments);
       
@@ -194,18 +205,24 @@ const PatientDashboard = () => {
   };
 
   const getStatusBadge = (status) => {
-    switch(status) {
-      case 'confirmé':
-        return <span className="badge badge-custom bg-success">Confirmé</span>;
-      case 'en_attente':
-        return <span className="badge badge-custom bg-warning">En attente</span>;
-      case 'annulé':
-        return <span className="badge badge-custom bg-danger">Annulé</span>;
-      case 'terminé':
-        return <span className="badge badge-custom bg-info">Terminé</span>;
-      default:
-        return <span className="badge badge-custom bg-secondary">{status}</span>;
-    }
+    const statusClasses = {
+      'confirmé': 'status-confirmed',
+      'en_attente': 'status-planned',
+      'annulé': 'status-cancelled',
+      'terminé': 'status-completed'
+    };
+    
+    const statusText = {
+      'confirmé': 'Confirmé',
+      'en_attente': 'Planifié',
+      'annulé': 'Annulé',
+      'terminé': 'Terminé'
+    };
+    
+    const className = statusClasses[status] || 'status-planned';
+    const text = statusText[status] || status;
+    
+    return <span className={`status-badge ${className}`}>{text}</span>;
   };
 
   const handleCancelAppointment = async (appointmentId) => {
@@ -216,7 +233,7 @@ const PatientDashboard = () => {
     const confirmationMessage = `Êtes-vous sûr de vouloir supprimer ce rendez-vous ?
     
 Date : ${formatSimpleDate(appointmentToDelete.date)}
-Dentiste : ${appointmentToDelete.dentiste}
+Dentiste : ${appointmentToDelete.dentisteNom}
 Service : ${appointmentToDelete.type}
 
 Cette action supprimera définitivement le rendez-vous.`;
@@ -282,29 +299,41 @@ Cette action supprimera définitivement le rendez-vous.`;
     }
   };
 
-  const PhotoDisplay = ({ size = 'large', className = '' }) => {
+  const PhotoDisplay = ({ size = 'large', className = '', type = 'patient' }) => {
     const [imgError, setImgError] = useState(false);
     const [photoUrl, setPhotoUrl] = useState(null);
     
     useEffect(() => {
-      if (patientInfo?.photoP) {
+      if (type === 'patient' && patientInfo?.photoP) {
         const url = getPhotoUrl(patientInfo.photoP);
         setPhotoUrl(url);
-      } else {
-        setPhotoUrl(null);
+      } else if (type === 'dentiste') {
+        // Pour les dentistes dans les rendez-vous
+        const dentiste = appointments.find(a => a.dentistePhoto)?.dentistePhoto;
+        if (dentiste) {
+          const url = dentiste.startsWith('/uploads/dentistes/') 
+            ? `${FILE_BASE_URL}${dentiste}`
+            : dentiste;
+          setPhotoUrl(url);
+        }
       }
-    }, [patientInfo?.photoP]);
+    }, [patientInfo?.photoP, type, appointments]);
     
     if (!photoUrl || imgError) {
       const isLarge = size === 'large';
+      const initials = type === 'patient' ? getInitials() : 'DR';
       const initialsClass = isLarge ? 'patient-initials-large' : 'patient-initials-small';
+      const gradient = type === 'patient' 
+        ? 'var(--purple-gradient)' 
+        : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
       
       return (
         <div 
           className={`${initialsClass} ${className}`}
-          title={patientInfo ? `${patientInfo.prenomP} ${patientInfo.nomP}` : ''}
+          style={{ background: gradient }}
+          title={type === 'patient' ? `${patientInfo?.prenomP} ${patientInfo?.nomP}` : 'Dentiste'}
         >
-          {getInitials()}
+          {initials}
         </div>
       );
     }
@@ -316,10 +345,10 @@ Cette action supprimera définitivement le rendez-vous.`;
       <div className={`${containerClass} ${className}`}>
         <img 
           src={photoUrl} 
-          alt={`${patientInfo?.prenomP} ${patientInfo?.nomP}`}
+          alt={type === 'patient' ? `${patientInfo?.prenomP} ${patientInfo?.nomP}` : 'Dentiste'}
           onError={() => setImgError(true)}
           onLoad={() => console.log(`Photo chargée avec succès (${size})!`)}
-          title={patientInfo ? `${patientInfo.prenomP} ${patientInfo.nomP}` : ''}
+          title={type === 'patient' ? `${patientInfo?.prenomP} ${patientInfo?.nomP}` : 'Dentiste'}
         />
       </div>
     );
@@ -327,76 +356,92 @@ Cette action supprimera définitivement le rendez-vous.`;
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner" role="status">
-          <span className="visually-hidden">Chargement...</span>
+      <div className="patient-loading">
+        <div className="spinner-glass">
+          <div className="spinner-inner"></div>
         </div>
+        <p>Chargement de votre tableau de bord...</p>
       </div>
     );
   }
 
   return (
-    <div className="dashboard-glass">
-      {/* Navigation Glass */}
-      <nav className="navbar-glass">
-        <div className="navbar-container">
-          <Link to="/" className="logo-text">
-            Mes Informations et mes rendez-vous
-          </Link>
-          
-          <div className="navbar-user">
-            <div className="user-info-glass">
-              <PhotoDisplay size="small" />
-              <div className="user-details">
-                <div className="user-name">{patientInfo?.prenomP} {patientInfo?.nomP}</div>
-                <small className="user-role">Patient</small>
-              </div>
+    <div className="patient-page">
+      {/* Video Background - Optionnel */}
+      <video className="video-bg" autoPlay muted loop>
+        <source src="/videos/dental-bg.mp4" type="video/mp4" />
+      </video>
+      <div className="video-overlay"></div>
+
+      {/* Background Image */}
+      <div 
+        className="publication-bg"
+        style={{
+          backgroundImage: `url('dentists-dental-office-male-female-600nw-2482836585.webp')`
+        }}
+      ></div>
+
+      {/* WRAPPER GLASS - NOUVELLE STRUCTURE */}
+      <div className="patient-wrapper">
+        
+        {/* SIDEBAR PATIENT */}
+        <div className="patient-sidebar">
+          <div className="patient-profile">
+            <PhotoDisplay size="large" type="patient" />
+            <h2 className="patient-name">{patientInfo?.prenomP} {patientInfo?.nomP}</h2>
+            <div className="patient-info">
+              <span>Patient</span>
+              <span>Inscrit depuis: {patientInfo?.dateInscription 
+                ? new Date(patientInfo.dateInscription).toLocaleDateString('fr-FR')
+                : 'Date inconnue'}
+              </span>
+            </div>
+          </div>
+
+          <div className="patient-contact">
+            <div className="contact-item">
+              <i className="bi bi-envelope"></i>
+              <span>{patientInfo?.emailP || 'Non spécifié'}</span>
             </div>
             
-            <button 
-              className="logout-btn"
-              onClick={handleLogout}
-            >
+            <div className="contact-item">
+              <i className="bi bi-calendar"></i>
+              <span>Né le: {patientInfo?.dateNP 
+                ? new Date(patientInfo.dateNP).toLocaleDateString('fr-FR')
+                : 'Non spécifié'}
+              </span>
+            </div>
+          </div>
+
+          <div className="action-buttons">
+            <button className="btn-primary" onClick={() => navigate('/rendezvous')}>
+              <i className="bi bi-calendar-plus me-2"></i>
+              Nouveau RDV
+            </button>
+            <button className="btn-secondary" onClick={() => navigate('/patient/edit')}>
+              <i className="bi bi-pencil me-2"></i>
+              Modifier Profil
+            </button>
+            <button className="btn-secondary" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right me-2"></i>
               Déconnexion
             </button>
           </div>
         </div>
-      </nav>
 
-      <main className="dashboard-main">
-        <div className="container-glass">
-          {/* En-tête avec photo */}
-          <div className="welcome-card">
-            <div className="welcome-content">
-              <PhotoDisplay size="large" />
-              
-              <div className="welcome-text">
-                <h1 className="welcome-title">
-                  <i className="bi bi-emoji-smile me-2"></i>
-                  Bienvenue, {patientInfo?.prenomP || 'Patient'} !
-                </h1>
-                <p className="welcome-subtitle">
-                  Gérez facilement vos rendez-vous dentaires et consultez vos informations personnelles.
-                </p>
-                
-                <div className="welcome-actions">
-                  <Link to="/rendezvous" className="btn-glass-primary">
-                    <i className="bi bi-calendar-plus me-2"></i>
-                    Prendre un rendez-vous
-                  </Link>
-                  <Link to="/patient/edit" className="btn-glass-outline">
-                    <i className="bi bi-pencil me-2"></i>
-                    Modifier mon profil
-                  </Link>
-                </div>
-              </div>
-            </div>
+        {/* CONTENU PRINCIPAL */}
+        <div className="patient-content">
+          {/* En-tête */}
+          <div className="patient-header">
+            <h1>
+              <i className="bi bi-speedometer2 me-2"></i>
+              Mon Tableau de Bord
+            </h1>
           </div>
 
           {/* Statistiques */}
-          <div className="stats-grid-glass">
-            <div className="stat-card-glass total">
+          <div className="stats-grid">
+            <div className="stat-card total">
               <div className="stat-icon">
                 <i className="bi bi-calendar-check"></i>
               </div>
@@ -406,7 +451,7 @@ Cette action supprimera définitivement le rendez-vous.`;
               </div>
             </div>
             
-            <div className="stat-card-glass upcoming">
+            <div className="stat-card upcoming">
               <div className="stat-icon">
                 <i className="bi bi-clock"></i>
               </div>
@@ -416,7 +461,7 @@ Cette action supprimera définitivement le rendez-vous.`;
               </div>
             </div>
             
-            <div className="stat-card-glass completed">
+            <div className="stat-card completed">
               <div className="stat-icon">
                 <i className="bi bi-check-circle"></i>
               </div>
@@ -427,229 +472,218 @@ Cette action supprimera définitivement le rendez-vous.`;
             </div>
           </div>
 
-          <div className="dashboard-grid">
-            {/* Rendez-vous */}
-            <div className="dashboard-column">
-              <div className="section-card-glass">
-                <div className="section-header-glass">
-                  <h3 className="section-title-glass">
-                    <i className="bi bi-calendar-check me-2"></i>
-                    Mes Rendez-vous
-                  </h3>
-                </div>
-                
-                <div className="section-body">
-                  {appointments.length > 0 ? (
-                    <div className="appointments-list">
-                      {appointments.map((appointment) => (
-                        <div key={appointment.id} className="appointment-item-glass">
-                          <div className="appointment-header">
-                            <h6 className="appointment-type">
-                              {appointment.type}
-                            </h6>
-                            {getStatusBadge(appointment.status)}
-                          </div>
-                          
-                          <div className="appointment-details">
-                            <div className="detail-item">
-                              <i className="bi bi-person"></i>
-                              <span>{appointment.dentiste}</span>
-                            </div>
-                            <div className="detail-item">
-                              <i className="bi bi-calendar"></i>
-                              <span>{formatSimpleDate(appointment.date)}</span>
-                            </div>
-                            <div className="detail-item">
-                              <i className="bi bi-clock"></i>
-                              <span>{appointment.heureRV || 'Non spécifié'}</span>
-                            </div>
-                          </div>
-                          
-                          {appointment.details && (
-                            <p className="appointment-note">
-                              <i className="bi bi-chat-left-text me-1"></i>
-                              {appointment.details}
-                            </p>
-                          )}
-                          
-                          {(appointment.status === 'en_attente' || appointment.status === 'confirmé') && (
-                            <div className="appointment-actions">
-                              <button 
-                                className="btn-glass-danger"
-                                onClick={() => handleCancelAppointment(appointment.id)}
-                                disabled={deletingId === appointment.id}
-                              >
-                                {deletingId === appointment.id ? (
-                                  <>
-                                    <span className="spinner spinner-sm me-2"></span>
-                                    Annulation...
-                                  </>
-                                ) : (
-                                  <>
-                                    <i className="bi bi-x-circle me-2"></i>
-                                    Annuler RDV
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="empty-state">
-                      <i className="bi bi-calendar-x"></i>
-                      <h5>Aucun rendez-vous prévu</h5>
-                      <p>Prenez votre premier rendez-vous dès maintenant</p>
-                      <Link to="/rendezvous" className="btn-glass-primary">
-                        <i className="bi bi-plus-circle me-2"></i>
-                        Prendre rendez-vous
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
+          {/* Section Rendez-vous */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">
+                <i className="bi bi-calendar-check me-2"></i>
+                Mes Rendez-vous
+              </h3>
+              <button className="btn-action details" onClick={() => navigate('/rendezvous')}>
+                <i className="bi bi-plus-circle me-2"></i>
+                Prendre RDV
+              </button>
             </div>
 
-            {/* Publications */}
-            <div className="dashboard-column">
-              <div className="section-card-glass">
-                <div className="section-header-glass">
-                  <h3 className="section-title-glass">
-                    <i className="bi bi-newspaper me-2"></i>
-                    Dernières Actualités
-                  </h3>
-                </div>
-                
-                <div className="section-body">
-                  {publications.length > 0 ? (
-                    <div className="publications-list">
-                      {publications.map((publication) => (
-                        <div key={publication.id} className="publication-item">
-                          <div className="publication-header">
-                            <h6 className="publication-title">{publication.title}</h6>
-                            {publication.categorie && (
-                              <span className="tag">{publication.categorie}</span>
-                            )}
-                          </div>
-                          
-                          <p className="publication-content">
-                            {publication.content && publication.content.length > 120 
-                              ? `${publication.content.substring(0, 120)}...`
-                              : publication.content || 'Pas de contenu'}
-                          </p>
-                          
-                          <div className="publication-footer">
-                            <small className="publication-author">
-                              <i className="bi bi-person me-1"></i>
-                              {publication.auteur || 'Auteur inconnu'}
-                            </small>
-                            <small className="publication-date">
-                              <i className="bi bi-calendar me-1"></i>
-                              {formatSimpleDate(publication.date)}
-                            </small>
+            <div className="appointments-list">
+              {appointments.length > 0 ? (
+                appointments.slice(0, 5).map((appointment) => (
+                  <div key={appointment.id} className="appointment-card">
+                    <div className="appointment-header">
+                      <div className="dentiste-info">
+                        <PhotoDisplay size="small" type="dentiste" />
+                        <div className="dentiste-details">
+                          <h4 className="dentiste-name">{appointment.dentisteNom}</h4>
+                          <div className="dentiste-meta">
+                            <span className="dentiste-speciality">
+                              <i className="bi bi-briefcase me-1"></i>
+                              {appointment.dentisteSpecialite}
+                            </span>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                      
+                      <div className="appointment-meta">
+                        <div className="appointment-time">
+                          <i className="bi bi-clock me-2"></i>
+                          {appointment.heureRV} - {formatSimpleDate(appointment.date)}
+                        </div>
+                        {getStatusBadge(appointment.status)}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="empty-state">
-                      <i className="bi bi-newspaper"></i>
-                      <p>Aucune publication disponible</p>
+
+                    <div className="appointment-body">
+                      {appointment.details && (
+                        <div className="appointment-notes">
+                          <i className="bi bi-chat-left-text me-2"></i>
+                          <span>{appointment.details}</span>
+                        </div>
+                      )}
+
+                      {appointment.servicesList && appointment.servicesList.length > 0 && (
+                        <div className="services-list">
+                          <h6><i className="bi bi-list-task me-2"></i>Services</h6>
+                          <div className="services-tags">
+                            {appointment.servicesList.map((service, index) => (
+                              <span key={index} className="service-tag">
+                                {service.nomSM}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {(appointment.status === 'en_attente' || appointment.status === 'confirmé') && (
+                        <div className="appointment-actions">
+                          <button 
+                            className="btn-action cancel"
+                            onClick={() => handleCancelAppointment(appointment.id)}
+                            disabled={deletingId === appointment.id}
+                          >
+                            {deletingId === appointment.id ? (
+                              <>
+                                <span className="spinner-inner spinner-sm me-2"></span>
+                                Annulation...
+                              </>
+                            ) : (
+                              <>
+                                <i className="bi bi-x-circle me-2"></i>
+                                Annuler RDV
+                              </>
+                            )}
+                          </button>
+                          
+                          <button className="btn-action details">
+                            <i className="bi bi-info-circle me-2"></i>
+                            Détails
+                          </button>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <i className="bi bi-calendar-x empty-icon"></i>
+                  <h3>Aucun rendez-vous prévu</h3>
+                  <p>Prenez votre premier rendez-vous dès maintenant</p>
+                  <button className="btn-primary" onClick={() => navigate('/rendezvous')}>
+                    <i className="bi bi-plus-circle me-2"></i>
+                    Prendre rendez-vous
+                  </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 
-          {/* Informations patient */}
-          <div className="section-card-glass">
-            <div className="section-header-glass">
-              <h3 className="section-title-glass">
+          {/* Section Informations Personnelles */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">
                 <i className="bi bi-person-circle me-2"></i>
                 Mes Informations Personnelles
               </h3>
-              <Link to="/patient/edit" className="btn-glass-outline">
+              <button className="btn-action details" onClick={() => navigate('/patient/edit')}>
                 <i className="bi bi-pencil me-2"></i>
                 Modifier
-              </Link>
+              </button>
             </div>
-            
-            <div className="section-body">
-              <div className="info-grid-glass">
-                <div className="info-item-glass">
-                  <h6>Nom complet</h6>
-                  <p>{patientInfo?.nomP || 'Non spécifié'} {patientInfo?.prenomP || ''}</p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Email</h6>
-                  <p>{patientInfo?.emailP || 'Non spécifié'}</p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Date de naissance</h6>
-                  <p>
-                    {patientInfo?.dateNP
-                      ? new Date(patientInfo.dateNP).toLocaleDateString('fr-FR')
-                      : 'Non spécifié'
-                    }
-                  </p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Groupe sanguin</h6>
-                  <p>{patientInfo?.groupeSanguinP || 'Non spécifié'}</p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Sexe</h6>
-                  <p>
-                    {patientInfo?.sexeP === 'M' ? 'Masculin' : 
-                     patientInfo?.sexeP === 'F' ? 'Féminin' : 'Non spécifié'}
-                  </p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Recouvrement</h6>
-                  <p>{patientInfo?.RecouvrementP || 'Non spécifié'}</p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Date d'inscription</h6>
-                  <p>
-                    {patientInfo?.dateInscription 
-                      ? new Date(patientInfo.dateInscription).toLocaleDateString('fr-FR')
-                      : 'Non spécifié'
-                    }
-                  </p>
-                </div>
-                
-                <div className="info-item-glass">
-                  <h6>Dernière consultation</h6>
-                  <p>
-                    {patientInfo?.derniereConsultation 
-                      ? new Date(patientInfo.derniereConsultation).toLocaleDateString('fr-FR')
-                      : 'Jamais'
-                    }
-                  </p>
-                </div>
+
+            <div className="info-grid-glass">
+              <div className="info-item-glass">
+                <h6>Nom complet</h6>
+                <p>{patientInfo?.nomP || 'Non spécifié'} {patientInfo?.prenomP || ''}</p>
               </div>
               
-              {patientInfo?.allergies && (
-                <div className="alert-glass warning">
-                  <i className="bi bi-exclamation-triangle me-2"></i>
-                  <div>
-                    <h6>Allergies</h6>
-                    <p>{patientInfo.allergies}</p>
+              <div className="info-item-glass">
+                <h6>Email</h6>
+                <p>{patientInfo?.emailP || 'Non spécifié'}</p>
+              </div>
+              
+              <div className="info-item-glass">
+                <h6>Date de naissance</h6>
+                <p>
+                  {patientInfo?.dateNP
+                    ? new Date(patientInfo.dateNP).toLocaleDateString('fr-FR')
+                    : 'Non spécifié'
+                  }
+                </p>
+              </div>
+              
+              <div className="info-item-glass">
+                <h6>Groupe sanguin</h6>
+                <p>{patientInfo?.groupeSanguinP || 'Non spécifié'}</p>
+              </div>
+              
+              <div className="info-item-glass">
+                <h6>Sexe</h6>
+                <p>
+                  {patientInfo?.sexeP === 'M' ? 'Masculin' : 
+                   patientInfo?.sexeP === 'F' ? 'Féminin' : 'Non spécifié'}
+                </p>
+              </div>
+              
+              
+      
+              
+              
+            </div>
+            
+            
+          </div>
+
+          {/* Section Actualités */}
+          <div className="section-card">
+            <div className="section-header">
+              <h3 className="section-title">
+                <i className="bi bi-newspaper me-2"></i>
+                Dernières Actualités
+              </h3>
+              <button className="btn-action details" onClick={() => navigate('/publication')}>
+                <i className="bi bi-eye me-2"></i>
+                Voir tout
+              </button>
+            </div>
+
+            <div className="publications-list">
+              {publications.length > 0 ? (
+                publications.map((publication) => (
+                  <div key={publication.id} className="publication-item">
+                    <div className="publication-header">
+                      <h6 className="publication-title">{publication.title}</h6>
+                      {publication.categorie && (
+                        <span className="tag">{publication.categorie}</span>
+                      )}
+                    </div>
+                    
+                    <p className="publication-content">
+                      {publication.content && publication.content.length > 120 
+                        ? `${publication.content.substring(0, 120)}...`
+                        : publication.content || 'Pas de contenu'}
+                    </p>
+                    
+                    <div className="publication-footer">
+                      <small className="publication-author">
+                        <i className="bi bi-person me-1"></i>
+                        {publication.auteur || 'Auteur inconnu'}
+                      </small>
+                      <small className="publication-date">
+                        <i className="bi bi-calendar me-1"></i>
+                        {formatSimpleDate(publication.date)}
+                      </small>
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="empty-state">
+                  <i className="bi bi-newspaper empty-icon"></i>
+                  <p>Aucune publication disponible</p>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

@@ -554,6 +554,13 @@ const Rendezvous = () => {
 
   return (
     <div className="rendezvous-page">
+    {/* BACKGROUND */}
+      <div 
+        className="publication-bg"
+        style={{
+          backgroundImage: `url('dentists-dental-office-male-female-600nw-2482836585.webp')`
+        }}
+      ></div>
       <div className="container">
         <div className="page-header text-center mb-5">
           <h1 className="display-title">
